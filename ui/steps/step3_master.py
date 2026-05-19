@@ -216,9 +216,9 @@ class Step3Master(ctk.CTkFrame):
         )
 
     def _export(self):
-        audio = self.session.get("mastered_audio") or self.session.get(
-            "processed_audio"
-        )
+        audio = self.session.get("mastered_audio")
+        if audio is None:
+            audio = self.session.get("processed_audio")
         if audio is None:
             return
         sr = self.session["sample_rate"]
@@ -226,6 +226,7 @@ class Step3Master(ctk.CTkFrame):
 
         ext = ".wav" if "WAV" in fmt else ".flac"
         path = filedialog.asksaveasfilename(
+            parent=self.winfo_toplevel(),
             defaultextension=ext,
             filetypes=(
                 [("WAV", "*.wav"), ("FLAC", "*.flac")]
