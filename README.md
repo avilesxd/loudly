@@ -17,6 +17,10 @@ Aplicación de escritorio para masterizar temas musicales. Wizard de 3 pasos: ca
 
 </div>
 
+> [!WARNING]
+> Al ejecutar `Loudly.exe` por primera vez, Windows puede mostrar el mensaje **"Windows protegió tu PC"** porque el ejecutable no tiene firma de código comercial. El archivo es seguro — podés verificar el código fuente en este repositorio.
+> Para ejecutarlo: hacé clic en **"Más información"** → **"Ejecutar de todas formas"**.
+
 ---
 
 <div align="center">
