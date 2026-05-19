@@ -1,10 +1,12 @@
-import customtkinter as ctk
-import threading
-import tempfile
 import os
+import tempfile
+import threading
+from tkinter import filedialog
+
+import customtkinter as ctk
 import numpy as np
 import soundfile as sf
-from tkinter import filedialog
+
 from audio.automaster import apply_automaster
 from audio.limiter import measure_lufs
 from audio.loader import load_audio
@@ -13,15 +15,18 @@ from ui.components.player import AudioPlayer
 
 class Step3Master(ctk.CTkFrame):
     """
-    Paso 3 del wizard: auto-masterización por referencia, análisis comparativo y exportación.
+    Paso 3 del wizard: auto-masterización por referencia, análisis
+    comparativo y exportación.
 
     Layout de dos columnas:
         Izquierda: botón de Auto-Master, barra de progreso indeterminada durante el
                    procesamiento, y sección de exportación con selector de formato.
-        Derecha: panel de análisis con métricas ANTES/DESPUÉS (LUFS, True Peak, Dinámica)
+        Derecha: panel de análisis con métricas ANTES/DESPUÉS (LUFS, True Peak,
+                 Dinámica)
                  y el reproductor ANTES/DESPUÉS.
 
-    La exportación prioriza mastered_audio; si no existe (el usuario no usó Auto-Master),
+    La exportación prioriza mastered_audio; si no existe (el usuario no usó
+    Auto-Master),
     exporta processed_audio. Esto permite usar el paso 3 solo como panel de exportación
     sin necesidad de aplicar matchering.
     """
@@ -118,10 +123,20 @@ class Step3Master(ctk.CTkFrame):
         header_row = ctk.CTkFrame(right, fg_color="transparent")
         header_row.pack(fill="x", padx=14, pady=(0, 4))
         ctk.CTkLabel(header_row, text="", width=110).pack(side="left")
-        ctk.CTkLabel(header_row, text="ANTES", font=ctk.CTkFont(size=11, weight="bold"),
-                     text_color="#60a5fa", width=80).pack(side="left")
-        ctk.CTkLabel(header_row, text="DESPUÉS", font=ctk.CTkFont(size=11, weight="bold"),
-                     text_color="#a78bfa", width=80).pack(side="left")
+        ctk.CTkLabel(
+            header_row,
+            text="ANTES",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#60a5fa",
+            width=80,
+        ).pack(side="left")
+        ctk.CTkLabel(
+            header_row,
+            text="DESPUÉS",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#a78bfa",
+            width=80,
+        ).pack(side="left")
 
         self._analysis_before: dict[str, ctk.CTkLabel] = {}
         self._analysis_after: dict[str, ctk.CTkLabel] = {}
@@ -132,13 +147,20 @@ class Step3Master(ctk.CTkFrame):
         ]:
             row = ctk.CTkFrame(right, fg_color="transparent")
             row.pack(fill="x", padx=14, pady=2)
-            ctk.CTkLabel(row, text=label + ":", font=ctk.CTkFont(size=12),
-                         text_color="#888888", width=110).pack(side="left")
-            before_val = ctk.CTkLabel(row, text="—", font=ctk.CTkFont(size=12),
-                                      width=80, text_color="#60a5fa")
+            ctk.CTkLabel(
+                row,
+                text=label + ":",
+                font=ctk.CTkFont(size=12),
+                text_color="#888888",
+                width=110,
+            ).pack(side="left")
+            before_val = ctk.CTkLabel(
+                row, text="—", font=ctk.CTkFont(size=12), width=80, text_color="#60a5fa"
+            )
             before_val.pack(side="left")
-            after_val = ctk.CTkLabel(row, text="—", font=ctk.CTkFont(size=12),
-                                     width=80, text_color="#a78bfa")
+            after_val = ctk.CTkLabel(
+                row, text="—", font=ctk.CTkFont(size=12), width=80, text_color="#a78bfa"
+            )
             after_val.pack(side="left")
             self._analysis_before[key] = before_val
             self._analysis_after[key] = after_val
@@ -183,13 +205,15 @@ class Step3Master(ctk.CTkFrame):
         if processed is not None:
             sr = self.session["sample_rate"]
             mastered = self.session.get("mastered_audio")
-            self._player.load(before=self.session["audio_data"], sample_rate=sr,
-                              after=mastered)
+            self._player.load(
+                before=self.session["audio_data"], sample_rate=sr, after=mastered
+            )
             self._update_analysis(processed, mastered, sr)
 
     def _run_automaster(self):
         """
-        Serializa processed_audio a un WAV temporal y lanza matchering en un hilo daemon.
+        Serializa processed_audio a un WAV temporal y lanza matchering en un
+        hilo daemon.
 
         matchering no opera sobre arrays en memoria; requiere rutas de archivos.
         El flujo es: processed_audio → WAV temporal (tmp_in) → matchering.process()
@@ -228,7 +252,7 @@ class Step3Master(ctk.CTkFrame):
 
                 self.after(0, lambda: self._on_automaster_done(mastered, sr))
             except Exception as e:
-                self.after(0, lambda: self._on_automaster_error(str(e)))
+                self.after(0, lambda err=e: self._on_automaster_error(str(err)))
 
         threading.Thread(target=_work, daemon=True).start()
 
@@ -236,7 +260,9 @@ class Step3Master(ctk.CTkFrame):
         self._progress.stop()
         self._progress.pack_forget()
         self._automaster_btn.configure(state="normal", text="⚡ Aplicar Auto-Master")
-        self._status_label.configure(text="✅ Auto-master aplicado", text_color="#4ade80")
+        self._status_label.configure(
+            text="✅ Auto-master aplicado", text_color="#4ade80"
+        )
         self._player.set_after(mastered)
         self._update_analysis(self.session.get("processed_audio"), mastered, sr)
 
@@ -246,8 +272,9 @@ class Step3Master(ctk.CTkFrame):
         self._automaster_btn.configure(state="normal", text="⚡ Aplicar Auto-Master")
         self._status_label.configure(text=f"Error: {error}", text_color="#ef4444")
 
-    def _update_analysis(self, before: np.ndarray | None,
-                         after: np.ndarray | None, sr: int):
+    def _update_analysis(
+        self, before: np.ndarray | None, after: np.ndarray | None, sr: int
+    ):
         """
         Calcula las métricas de análisis y actualiza las etiquetas de la UI.
 
@@ -262,6 +289,7 @@ class Step3Master(ctk.CTkFrame):
 
         Si before o after son None, esas columnas no se actualizan.
         """
+
         def _metrics(audio):
             lufs = measure_lufs(audio, sr)
             peak = float(np.max(np.abs(audio)))

@@ -1,7 +1,8 @@
+import threading
+
+import customtkinter as ctk
 import numpy as np
 import sounddevice as sd
-import customtkinter as ctk
-import threading
 
 
 class AudioPlayer(ctk.CTkFrame):
@@ -117,7 +118,8 @@ class AudioPlayer(ctk.CTkFrame):
 
     def _start_playback(self):
         """
-        Abre un OutputStream de sounddevice y comienza la reproducción mediante callback.
+        Abre un OutputStream de sounddevice y comienza la reproducción
+        mediante callback.
 
         El callback se ejecuta en el hilo de audio de sounddevice (no en el hilo UI).
         Lee chunks del buffer activo usando _position como cursor. Cuando se llega

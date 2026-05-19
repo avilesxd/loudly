@@ -1,7 +1,9 @@
-import matchering as mg
 import logging
 
+import matchering as mg
+
 logging.getLogger("matchering").setLevel(logging.WARNING)
+
 
 def apply_automaster(
     target_path: str,
@@ -9,7 +11,8 @@ def apply_automaster(
     output_path: str,
 ) -> None:
     """
-    Aplica auto-masterización al target igualando el espectro y loudness de la referencia.
+    Aplica auto-masterización al target igualando el espectro y loudness de la
+    referencia.
 
     Usa matchering, que analiza la referencia en bandas de frecuencia y aplica filtros
     y compresión multibanda al target para aproximar su perfil espectral y dinámico.
@@ -23,7 +26,8 @@ def apply_automaster(
                      generado desde processed_audio).
         reference_path: Ruta al track de referencia. Puede ser cualquier formato
                         soportado por matchering (WAV, MP3, FLAC, etc.).
-        output_path: Ruta donde se escribe el WAV masterizado. Se sobreescribe si existe.
+        output_path: Ruta donde se escribe el WAV masterizado. Se sobreescribe
+                     si existe.
     """
     mg.process(
         target=target_path,

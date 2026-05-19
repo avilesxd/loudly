@@ -1,8 +1,7 @@
 import numpy as np
-import soundfile as sf
 import pytest
-import tempfile
-import os
+import soundfile as sf
+
 
 @pytest.fixture
 def sine_wav(tmp_path):

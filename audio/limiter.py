@@ -42,11 +42,11 @@ def apply_limiter(
         target_lufs: Loudness objetivo en LUFS (−14 Spotify, −13 YouTube, −9 CD).
 
     Returns:
-        Array float32 (channels, samples) normalizado y con el pico recortado a −0.3 dBFS.
+        Array float32 (channels, samples) normalizado y con el pico recortado
+        a −0.3 dBFS.
     """
     current_lufs = measure_lufs(audio, sample_rate)
 
-    meter = pyln.Meter(sample_rate)
     normalized = pyln.normalize.loudness(
         audio.T.astype(np.float64), current_lufs, target_lufs
     )

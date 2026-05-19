@@ -1,4 +1,5 @@
 import customtkinter as ctk
+
 from ui.steps.step1_load import Step1Load
 from ui.steps.step2_edit import Step2Edit
 from ui.steps.step3_master import Step3Master
@@ -63,7 +64,7 @@ class LoudlyApp(ctk.CTk):
         steps_frame = ctk.CTkFrame(header, fg_color="transparent")
         steps_frame.pack(side="right", padx=20)
 
-        for i, name in enumerate(["① Cargar", "② Ajustar", "③ Masterizar"]):
+        for name in ["① Cargar", "② Ajustar", "③ Masterizar"]:
             lbl = ctk.CTkLabel(steps_frame, text=name, font=ctk.CTkFont(size=12))
             lbl.pack(side="left", padx=10)
             self._step_labels.append(lbl)

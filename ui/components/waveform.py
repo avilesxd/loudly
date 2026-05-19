@@ -1,10 +1,10 @@
-import numpy as np
 import customtkinter as ctk
 import matplotlib
+import numpy as np
 
 matplotlib.use("TkAgg")
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 
 class WaveformCanvas(ctk.CTkFrame):

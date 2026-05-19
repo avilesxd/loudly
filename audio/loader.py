@@ -1,10 +1,11 @@
+import os
+
 import numpy as np
 import soundfile as sf
-import tempfile
-import os
 
 SUPPORTED_EXTENSIONS = {".wav", ".flac", ".aiff", ".aif"}
 MINIAUDIO_EXTENSIONS = {".mp3"}
+
 
 def load_audio(path: str) -> tuple[np.ndarray, int]:
     """
@@ -36,6 +37,7 @@ def load_audio(path: str) -> tuple[np.ndarray, int]:
     audio = data.T
     return audio, sample_rate
 
+
 def _load_mp3(path: str) -> tuple[np.ndarray, int]:
     """
     Decodifica un MP3 usando miniaudio y lo convierte a (channels, samples) float32.
@@ -44,6 +46,7 @@ def _load_mp3(path: str) -> tuple[np.ndarray, int]:
     contiguo; hay que reshape a (samples, channels) antes de transponer.
     """
     import miniaudio
+
     decoded = miniaudio.mp3_read_file_f32(path)
     audio = np.frombuffer(decoded.samples, dtype=np.float32)
     # miniaudio returns interleaved samples → reshape to (samples, channels)
