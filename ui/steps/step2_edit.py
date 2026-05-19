@@ -114,6 +114,7 @@ class Step2Edit(ctk.CTkFrame):
         self._waveform.render(audio)
         self._player.load(audio, self.session["sample_rate"],
                           self.session.get("processed_audio"))
+        self._lufs_current.configure(text="", text_color="#888888")
         self._update_lufs_display()
 
     def _on_eq_change(self, key: str, value: float):
@@ -136,10 +137,11 @@ class Step2Edit(ctk.CTkFrame):
         self._debounce_id = self.after(300, self._reprocess)
 
     def _reprocess(self):
+        self._debounce_id = None
         audio = self.session.get("audio_data")
         if audio is None:
             return
-        eq_p = self.session["eq_params"]
+        eq_p = dict(self.session["eq_params"])
         lufs_target = self.session["lufs_target"]
 
         self._process_gen += 1
@@ -153,9 +155,12 @@ class Step2Edit(ctk.CTkFrame):
                 limited = apply_limiter(eq_out, self.session["sample_rate"], lufs_target)
                 if gen != self._process_gen:
                     return
+                lufs = measure_lufs(limited, self.session["sample_rate"])
                 self.session["processed_audio"] = limited
                 self.after(0, lambda: self._player.set_after(limited))
-                self.after(0, self._update_lufs_display)
+                self.after(0, lambda l=lufs: self._lufs_current.configure(
+                    text=f"actual: {l:.1f} LUFS", text_color="#888888"
+                ))
             except Exception as e:
                 if gen == self._process_gen:
                     self.after(0, lambda err=str(e): self._lufs_current.configure(
