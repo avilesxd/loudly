@@ -95,26 +95,36 @@ class Step3Master(ctk.CTkFrame):
             text="Análisis",
             font=ctk.CTkFont(size=14, weight="bold"),
             text_color="#7C3AED",
-        ).pack(anchor="w", padx=14, pady=(12, 8))
+        ).pack(anchor="w", padx=14, pady=(12, 4))
 
-        self._analysis_labels: dict[str, ctk.CTkLabel] = {}
+        # Header row
+        header_row = ctk.CTkFrame(right, fg_color="transparent")
+        header_row.pack(fill="x", padx=14, pady=(0, 4))
+        ctk.CTkLabel(header_row, text="", width=110).pack(side="left")
+        ctk.CTkLabel(header_row, text="ANTES", font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color="#60a5fa", width=80).pack(side="left")
+        ctk.CTkLabel(header_row, text="DESPUÉS", font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color="#a78bfa", width=80).pack(side="left")
+
+        self._analysis_before: dict[str, ctk.CTkLabel] = {}
+        self._analysis_after: dict[str, ctk.CTkLabel] = {}
         for key, label in [
-            ("lufs", "LUFS integrado"),
+            ("lufs", "LUFS"),
             ("peak", "True Peak"),
-            ("dr", "Dynamic Range"),
+            ("dr", "Dinámica"),
         ]:
             row = ctk.CTkFrame(right, fg_color="transparent")
-            row.pack(fill="x", padx=14, pady=3)
-            ctk.CTkLabel(
-                row,
-                text=label + ":",
-                font=ctk.CTkFont(size=12),
-                text_color="#888888",
-                width=130,
-            ).pack(side="left")
-            val = ctk.CTkLabel(row, text="—", font=ctk.CTkFont(size=12))
-            val.pack(side="left")
-            self._analysis_labels[key] = val
+            row.pack(fill="x", padx=14, pady=2)
+            ctk.CTkLabel(row, text=label + ":", font=ctk.CTkFont(size=12),
+                         text_color="#888888", width=110).pack(side="left")
+            before_val = ctk.CTkLabel(row, text="—", font=ctk.CTkFont(size=12),
+                                      width=80, text_color="#60a5fa")
+            before_val.pack(side="left")
+            after_val = ctk.CTkLabel(row, text="—", font=ctk.CTkFont(size=12),
+                                     width=80, text_color="#a78bfa")
+            after_val.pack(side="left")
+            self._analysis_before[key] = before_val
+            self._analysis_after[key] = after_val
 
         self._player = AudioPlayer(right)
         self._player.pack(fill="x", padx=14, pady=16)
@@ -147,12 +157,10 @@ class Step3Master(ctk.CTkFrame):
         processed = self.session.get("processed_audio")
         if processed is not None:
             sr = self.session["sample_rate"]
-            self._player.load(
-                before=self.session["audio_data"],
-                sample_rate=sr,
-                after=self.session.get("mastered_audio"),
-            )
-            self._update_analysis(processed, sr)
+            mastered = self.session.get("mastered_audio")
+            self._player.load(before=self.session["audio_data"], sample_rate=sr,
+                              after=mastered)
+            self._update_analysis(processed, mastered, sr)
 
     def _run_automaster(self):
         self._automaster_btn.configure(state="disabled", text="⏳ Procesando…")
@@ -188,32 +196,37 @@ class Step3Master(ctk.CTkFrame):
 
     def _on_automaster_done(self, mastered: np.ndarray, sr: int):
         self._automaster_btn.configure(state="normal", text="⚡ Aplicar Auto-Master")
-        self._status_label.configure(
-            text="✅ Auto-master aplicado", text_color="#4ade80"
-        )
+        self._status_label.configure(text="✅ Auto-master aplicado", text_color="#4ade80")
         self._player.set_after(mastered)
-        self._update_analysis(mastered, sr)
+        self._update_analysis(self.session.get("processed_audio"), mastered, sr)
 
     def _on_automaster_error(self, error: str):
         self._automaster_btn.configure(state="normal", text="⚡ Aplicar Auto-Master")
         self._status_label.configure(text=f"Error: {error}", text_color="#ef4444")
 
-    def _update_analysis(self, audio: np.ndarray, sr: int):
-        lufs = measure_lufs(audio, sr)
-        peak = float(np.max(np.abs(audio)))
-        peak_db = 20 * np.log10(peak) if peak > 0 else -np.inf
-        dr = float(audio.std())
+    def _update_analysis(self, before: np.ndarray | None,
+                         after: np.ndarray | None, sr: int):
+        def _metrics(audio):
+            lufs = measure_lufs(audio, sr)
+            peak = float(np.max(np.abs(audio)))
+            peak_db = 20 * np.log10(peak) if peak > 0 else -np.inf
+            dr = float(audio.std())
+            return lufs, peak_db, dr
 
-        self._analysis_labels["lufs"].configure(
-            text=f"{lufs:.1f} LUFS", text_color="#4ade80"
-        )
-        self._analysis_labels["peak"].configure(
-            text=f"{peak_db:.1f} dBTP",
-            text_color="#4ade80" if peak_db < -0.1 else "#ef4444",
-        )
-        self._analysis_labels["dr"].configure(
-            text=f"{dr * 100:.1f} DR", text_color="#aaaaaa"
-        )
+        if before is not None:
+            lufs, peak_db, dr = _metrics(before)
+            self._analysis_before["lufs"].configure(text=f"{lufs:.1f} LUFS")
+            self._analysis_before["peak"].configure(text=f"{peak_db:.1f} dBTP")
+            self._analysis_before["dr"].configure(text=f"{dr * 100:.1f} DR")
+
+        if after is not None:
+            lufs, peak_db, dr = _metrics(after)
+            self._analysis_after["lufs"].configure(text=f"{lufs:.1f} LUFS")
+            self._analysis_after["peak"].configure(
+                text=f"{peak_db:.1f} dBTP",
+                text_color="#4ade80" if peak_db < -0.1 else "#ef4444",
+            )
+            self._analysis_after["dr"].configure(text=f"{dr * 100:.1f} DR")
 
     def _export(self):
         audio = self.session.get("mastered_audio")
