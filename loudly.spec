@@ -6,6 +6,7 @@ block_cipher = None
 datas = []
 datas += collect_data_files("matchering")
 datas += collect_data_files("customtkinter")
+datas += [("assets/loudly.ico", "assets")]
 
 a = Analysis(
     ["main.py"],
@@ -46,7 +47,7 @@ exe = EXE(
     name="Loudly",
     debug=False,
     console=False,
-    icon=None,
+    icon="assets/loudly.ico",
     onefile=True,
     version="version_info.txt",
 )

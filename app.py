@@ -1,8 +1,17 @@
+import sys
+from pathlib import Path
+
 import customtkinter as ctk
 
 from ui.steps.step1_load import Step1Load
 from ui.steps.step2_edit import Step2Edit
 from ui.steps.step3_master import Step3Master
+
+
+def _resource(relative: str) -> str:
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
+    return str(base / relative)
+
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -32,6 +41,7 @@ class LoudlyApp(ctk.CTk):
         self.title("Loudly — Masterizador")
         self.geometry("900x620")
         self.resizable(False, False)
+        self.iconbitmap(_resource("assets/loudly.ico"))
 
         self.session: dict = {
             "audio_path": None,
