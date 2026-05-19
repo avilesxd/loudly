@@ -52,6 +52,8 @@ class AudioPlayer(ctk.CTkFrame):
         )
         self._after_btn.pack(side="left", padx=2)
 
+        self._update_mode_buttons()
+
     def load(
         self, before: np.ndarray, sample_rate: int, after: np.ndarray | None = None
     ):
@@ -72,9 +74,28 @@ class AudioPlayer(ctk.CTkFrame):
         return self._before
 
     def _set_mode(self, mode: str):
+        if mode == "after" and self._after is None:
+            return  # no hay buffer DESPUÉS todavía
+        was_playing = self._playing
+        if was_playing:
+            self.stop()
         self._mode = mode
-        with self._lock:
-            self._position = 0
+        self._update_mode_buttons()
+        if was_playing:
+            self._start_playback()
+
+    def _update_mode_buttons(self):
+        before_active = self._mode == "before"
+        self._before_btn.configure(
+            fg_color="#1e6a9f" if before_active else "#1e3a5f",
+            border_width=2 if before_active else 0,
+            border_color="#60a5fa" if before_active else "transparent",
+        )
+        self._after_btn.configure(
+            fg_color="#5b1b9f" if before_active is False else "#2d1b69",
+            border_width=2 if not before_active else 0,
+            border_color="#a78bfa" if not before_active else "transparent",
+        )
 
     def _toggle_play(self):
         if self._playing:
