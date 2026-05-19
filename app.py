@@ -1,4 +1,3 @@
-# app.py
 import customtkinter as ctk
 from ui.steps.step1_load import Step1Load
 from ui.steps.step2_edit import Step2Edit
@@ -19,10 +18,10 @@ class LoudlyApp(ctk.CTk):
         self.session: dict = {
             "audio_path": None,
             "reference_path": None,
-            "audio_data": None,       # np.ndarray (channels, samples)
+            "audio_data": None,  # np.ndarray (channels, samples)
             "sample_rate": None,
             "processed_audio": None,  # after EQ + limiter
-            "mastered_audio": None,   # after matchering
+            "mastered_audio": None,  # after matchering
             "eq_params": {"low": 0.0, "low_mid": 0.0, "hi_mid": 0.0, "high": 0.0},
             "lufs_target": -14.0,
         }
@@ -40,8 +39,7 @@ class LoudlyApp(ctk.CTk):
         header.pack_propagate(False)
 
         ctk.CTkLabel(
-            header, text="🎵  LOUDLY",
-            font=ctk.CTkFont(size=16, weight="bold")
+            header, text="🎵  LOUDLY", font=ctk.CTkFont(size=16, weight="bold")
         ).pack(side="left", padx=20)
 
         self._step_labels = []
@@ -58,13 +56,19 @@ class LoudlyApp(ctk.CTk):
         self._container.pack(fill="both", expand=True)
 
         self._steps = [
-            Step1Load(self._container, self.session, on_next=lambda: self._show_step(1)),
-            Step2Edit(self._container, self.session, on_back=lambda: self._show_step(0),
-                      on_next=lambda: self._show_step(2)),
-            Step3Master(self._container, self.session, on_back=lambda: self._show_step(1)),
+            Step1Load(
+                self._container, self.session, on_next=lambda: self._show_step(1)
+            ),
+            Step2Edit(
+                self._container,
+                self.session,
+                on_back=lambda: self._show_step(0),
+                on_next=lambda: self._show_step(2),
+            ),
+            Step3Master(
+                self._container, self.session, on_back=lambda: self._show_step(1)
+            ),
         ]
-        for step in self._steps:
-            step.place(relwidth=1, relheight=1)
 
     def _show_step(self, index: int):
         self._steps[self._current_step].place_forget()
