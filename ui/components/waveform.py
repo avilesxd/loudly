@@ -22,8 +22,16 @@ class WaveformCanvas(ctk.CTkFrame):
 
     def render(self, audio: np.ndarray, color: str = "#7C3AED"):
         """
-        Draws the waveform.
-        audio: (channels, samples) float32
+        Dibuja la forma de onda del audio en el canvas.
+
+        Para mejorar el rendimiento con archivos largos, mezcla todos los canales
+        a mono (promedio) y hace downsample a máximo 2000 puntos antes de graficar.
+        Dibuja la línea de onda más un área de relleno con transparencia para
+        mejorar la legibilidad visual.
+
+        Args:
+            audio: Array float32 (channels, samples).
+            color: Color hex de la línea y el área de relleno.
         """
         self._ax.clear()
         self._ax.set_facecolor("#0d0d0d")

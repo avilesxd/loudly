@@ -10,6 +10,19 @@ LUFS_PRESETS = {"Spotify": -14.0, "YouTube": -13.0, "CD": -9.0}
 
 
 class Step2Edit(ctk.CTkFrame):
+    """
+    Paso 2 del wizard: EQ de 4 bandas y normalización LUFS con preview en tiempo real.
+
+    Cada vez que el usuario mueve un slider, se programa un reprocess con 300 ms
+    de debounce (_schedule_reprocess). El reprocess ejecuta apply_eq + apply_limiter
+    en un hilo daemon y actualiza session["processed_audio"] con el resultado.
+
+    Para evitar condiciones de carrera cuando el usuario sigue ajustando mientras
+    el hilo anterior aún procesa, se usa un contador de generación (_process_gen).
+    El hilo toma una snapshot de su número de generación al arrancar, y descarta
+    el resultado si el contador ya avanzó (es decir, llegó un reprocess más reciente).
+    """
+
     def __init__(self, parent, session: dict, on_back, on_next):
         super().__init__(parent, corner_radius=0, fg_color="transparent")
         self.session = session
@@ -108,6 +121,14 @@ class Step2Edit(ctk.CTkFrame):
                       width=140).pack(side="right")
 
     def on_enter(self):
+        """
+        Se llama al navegar hacia este paso (desde el paso 1 o al volver del paso 3).
+
+        Renderiza siempre la waveform del audio original (no del procesado), y carga
+        el reproductor con el estado actual del session — el processed_audio puede
+        haber sido generado en una visita anterior al paso 2, por lo que se muestra
+        como buffer DESPUÉS si existe.
+        """
         audio = self.session.get("audio_data")
         if audio is None:
             return
@@ -132,11 +153,27 @@ class Step2Edit(ctk.CTkFrame):
         self._on_lufs_change(value)
 
     def _schedule_reprocess(self):
+        """
+        Cancela el timer anterior y programa _reprocess con 300 ms de delay.
+
+        Los sliders pueden disparar decenas de eventos por segundo. El debounce
+        asegura que el procesamiento de audio solo ocurre cuando el usuario
+        deja de mover el control, evitando saturar el hilo de audio.
+        """
         if self._debounce_id:
             self.after_cancel(self._debounce_id)
         self._debounce_id = self.after(300, self._reprocess)
 
     def _reprocess(self):
+        """
+        Lanza EQ + limiter en un hilo daemon con protección contra resultados obsoletos.
+
+        Toma una snapshot de eq_params y lufs_target antes de lanzar el hilo para
+        evitar que el hilo lea parámetros modificados a mitad de procesamiento.
+        Incrementa _process_gen; el hilo compara su generación antes de escribir
+        en session y actualizar la UI — si la generación no coincide, el resultado
+        se descarta silenciosamente.
+        """
         self._debounce_id = None
         audio = self.session.get("audio_data")
         if audio is None:

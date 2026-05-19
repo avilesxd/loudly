@@ -12,6 +12,20 @@ from ui.components.player import AudioPlayer
 
 
 class Step3Master(ctk.CTkFrame):
+    """
+    Paso 3 del wizard: auto-masterización por referencia, análisis comparativo y exportación.
+
+    Layout de dos columnas:
+        Izquierda: botón de Auto-Master, barra de progreso indeterminada durante el
+                   procesamiento, y sección de exportación con selector de formato.
+        Derecha: panel de análisis con métricas ANTES/DESPUÉS (LUFS, True Peak, Dinámica)
+                 y el reproductor ANTES/DESPUÉS.
+
+    La exportación prioriza mastered_audio; si no existe (el usuario no usó Auto-Master),
+    exporta processed_audio. Esto permite usar el paso 3 solo como panel de exportación
+    sin necesidad de aplicar matchering.
+    """
+
     def __init__(self, parent, session: dict, on_back):
         super().__init__(parent, corner_radius=0, fg_color="transparent")
         self.session = session
@@ -145,6 +159,14 @@ class Step3Master(ctk.CTkFrame):
         ).pack(side="left")
 
     def on_enter(self):
+        """
+        Se llama al navegar hacia este paso.
+
+        Habilita o deshabilita el botón de Auto-Master según si hay referencia
+        en session. Actualiza el reproductor y el panel de análisis con el estado
+        actual del session, lo que permite reflejar cambios de EQ si el usuario
+        volvió al paso 2 y ajustó los controles.
+        """
         ref = self.session.get("reference_path")
         if ref:
             name = ref.split("/")[-1].split("\\")[-1]
@@ -166,6 +188,17 @@ class Step3Master(ctk.CTkFrame):
             self._update_analysis(processed, mastered, sr)
 
     def _run_automaster(self):
+        """
+        Serializa processed_audio a un WAV temporal y lanza matchering en un hilo daemon.
+
+        matchering no opera sobre arrays en memoria; requiere rutas de archivos.
+        El flujo es: processed_audio → WAV temporal (tmp_in) → matchering.process()
+        → WAV resultado (tmp_out) → load_audio() → session["mastered_audio"].
+        Los temporales se eliminan después de cargar el resultado, tanto en éxito
+        como en error (el except en _work no limpia, pero son archivos del sistema).
+
+        El botón se deshabilita para garantizar que solo corra un proceso a la vez.
+        """
         self._automaster_btn.configure(state="disabled", text="⏳ Procesando…")
         self._status_label.configure(
             text="Aplicando matchering, puede tardar unos segundos…",
@@ -215,6 +248,20 @@ class Step3Master(ctk.CTkFrame):
 
     def _update_analysis(self, before: np.ndarray | None,
                          after: np.ndarray | None, sr: int):
+        """
+        Calcula las métricas de análisis y actualiza las etiquetas de la UI.
+
+        Métricas calculadas:
+            LUFS: loudness integrado vía pyloudnorm (norma ITU-R BS.1770).
+            True Peak: máximo valor absoluto del array convertido a dBFS.
+                       Se colorea en rojo si supera −0.1 dBTP; a ese nivel
+                       algunos codecs lossy pueden generar clipping.
+            Dinámica: desviación estándar del array × 100. Es una aproximación
+                      rápida del rango dinámico; valores más altos indican
+                      más contraste entre partes suaves y fuertes.
+
+        Si before o after son None, esas columnas no se actualizan.
+        """
         def _metrics(audio):
             lufs = measure_lufs(audio, sr)
             peak = float(np.max(np.abs(audio)))
@@ -238,6 +285,16 @@ class Step3Master(ctk.CTkFrame):
             self._analysis_after["dr"].configure(text=f"{dr * 100:.1f} DR")
 
     def _export(self):
+        """
+        Abre el diálogo de guardado y escribe el audio al disco con soundfile.
+
+        Prioridad de fuente: mastered_audio → processed_audio. Si ninguno existe,
+        no hace nada (el botón debería estar visible solo cuando hay audio).
+
+        soundfile espera (samples, channels), por lo que el array interno
+        (channels, samples) se transpone antes de escribir. WAV usa subtype
+        "PCM_24" para 24-bit; FLAC usa la profundidad por defecto de soundfile.
+        """
         audio = self.session.get("mastered_audio")
         if audio is None:
             audio = self.session.get("processed_audio")

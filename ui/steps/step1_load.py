@@ -9,6 +9,18 @@ SUPPORTED = (
 
 
 class Step1Load(ctk.CTkFrame):
+    """
+    Paso 1 del wizard: selección del track principal y del track de referencia.
+
+    El track principal se decodifica aquí mismo con load_audio() y se almacena
+    en session["audio_data"]. El processed_audio se inicializa como copia del
+    audio original para que el paso 2 tenga algo que mostrar incluso si el usuario
+    no toca los sliders.
+
+    El track de referencia no se decodifica en este paso — matchering lo lee
+    directamente desde disco en el paso 3, por eso solo se guarda la ruta.
+    """
+
     def __init__(self, parent, session: dict, on_next):
         super().__init__(parent, corner_radius=0, fg_color="transparent")
         self.session = session
@@ -68,6 +80,13 @@ class Step1Load(ctk.CTkFrame):
         self._next_btn.pack(pady=20)
 
     def _pick_track(self):
+        """
+        Abre el diálogo de selección, decodifica el archivo y actualiza el session.
+
+        Si la carga falla (formato inválido, archivo corrupto, codec faltante, etc.)
+        muestra el error en la UI en lugar de propagar la excepción.
+        El botón Siguiente solo se habilita tras una carga exitosa.
+        """
         path = filedialog.askopenfilename(filetypes=SUPPORTED)
         if not path:
             return
@@ -88,6 +107,12 @@ class Step1Load(ctk.CTkFrame):
             self._error_label.configure(text=f"Error: {e}")
 
     def _pick_reference(self):
+        """
+        Registra la ruta del track de referencia en session sin decodificarlo.
+
+        La decodificación la hace matchering internamente en el paso 3.
+        No se valida el formato aquí; matchering reportará el error al procesar.
+        """
         path = filedialog.askopenfilename(filetypes=SUPPORTED)
         if not path:
             return

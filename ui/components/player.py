@@ -6,8 +6,17 @@ import threading
 
 class AudioPlayer(ctk.CTkFrame):
     """
-    Audio player with BEFORE / AFTER toggle.
-    Uses sounddevice OutputStream with callback for non-blocking playback.
+    Reproductor de audio con toggle ANTES / DESPUÉS.
+
+    Mantiene dos buffers en memoria (before y after) y reproduce el activo
+    según el modo seleccionado. Usa un OutputStream de sounddevice con callback
+    para reproducción no bloqueante; el hilo de audio y el hilo de UI pueden
+    acceder al buffer simultáneamente, por lo que se protege el cursor de
+    posición y el buffer activo con un threading.Lock.
+
+    El buffer ANTES es obligatorio (se carga con load()); el buffer DESPUÉS
+    es opcional y puede actualizarse en cualquier momento con set_after()
+    sin interrumpir la reproducción del buffer ANTES.
     """
 
     def __init__(self, parent, **kwargs):
@@ -74,8 +83,15 @@ class AudioPlayer(ctk.CTkFrame):
         return self._before
 
     def _set_mode(self, mode: str):
+        """
+        Cambia entre los buffers ANTES y DESPUÉS.
+
+        Si el audio está reproduciéndose, lo detiene, cambia el modo y reanuda
+        desde el principio del nuevo buffer. Ignora el cambio a "after" si no
+        hay buffer DESPUÉS cargado aún (evita reproducir silencio o crashear).
+        """
         if mode == "after" and self._after is None:
-            return  # no hay buffer DESPUÉS todavía
+            return
         was_playing = self._playing
         if was_playing:
             self.stop()
@@ -100,6 +116,15 @@ class AudioPlayer(ctk.CTkFrame):
             self._start_playback()
 
     def _start_playback(self):
+        """
+        Abre un OutputStream de sounddevice y comienza la reproducción mediante callback.
+
+        El callback se ejecuta en el hilo de audio de sounddevice (no en el hilo UI).
+        Lee chunks del buffer activo usando _position como cursor. Cuando se llega
+        al final, rellena outdata con ceros y marca _playing = False para indicar
+        que terminó. El lock protege _position y la lectura del buffer activo porque
+        _set_mode() puede cambiar el buffer desde el hilo UI mientras el callback corre.
+        """
         buf = self._current_buffer()
         if buf is None:
             return

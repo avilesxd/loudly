@@ -8,20 +8,37 @@ ctk.set_default_color_theme("blue")
 
 
 class LoudlyApp(ctk.CTk):
+    """
+    Ventana principal de Loudly. Implementa un wizard de 3 pasos.
+
+    El estado de la sesión vive en self.session, un diccionario que se pasa
+    por referencia a los tres pasos. Cada paso puede leerlo y modificarlo
+    directamente; no hay callbacks de estado entre pasos.
+
+    Claves del session:
+        audio_path (str | None): ruta al track principal cargado.
+        reference_path (str | None): ruta al track de referencia (opcional).
+        audio_data (ndarray | None): audio original, float32 (channels, samples).
+        sample_rate (int | None): frecuencia de muestreo del track principal.
+        processed_audio (ndarray | None): audio tras aplicar EQ y limiter en el paso 2.
+        mastered_audio (ndarray | None): audio tras aplicar matchering en el paso 3.
+        eq_params (dict): ganancias de EQ en dB — claves: low, low_mid, hi_mid, high.
+        lufs_target (float): loudness objetivo para el limitador, en LUFS.
+    """
+
     def __init__(self):
         super().__init__()
         self.title("Loudly — Masterizador")
         self.geometry("900x620")
         self.resizable(False, False)
 
-        # Shared state between steps
         self.session: dict = {
             "audio_path": None,
             "reference_path": None,
-            "audio_data": None,  # np.ndarray (channels, samples)
+            "audio_data": None,
             "sample_rate": None,
-            "processed_audio": None,  # after EQ + limiter
-            "mastered_audio": None,  # after matchering
+            "processed_audio": None,
+            "mastered_audio": None,
             "eq_params": {"low": 0.0, "low_mid": 0.0, "hi_mid": 0.0, "high": 0.0},
             "lufs_target": -14.0,
         }
@@ -71,6 +88,13 @@ class LoudlyApp(ctk.CTk):
         ]
 
     def _show_step(self, index: int):
+        """
+        Oculta el paso actual, coloca el nuevo y llama a su on_enter().
+
+        on_enter() permite a cada paso inicializarse con el session actualizado
+        (por ejemplo, Step2Edit renderiza la waveform al entrar al paso 2,
+        y Step3Master actualiza el análisis si el usuario vuelve del paso 2).
+        """
         self._steps[self._current_step].place_forget()
         self._current_step = index
         self._steps[index].place(relwidth=1, relheight=1)

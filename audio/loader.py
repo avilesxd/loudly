@@ -8,8 +8,20 @@ MINIAUDIO_EXTENSIONS = {".mp3"}
 
 def load_audio(path: str) -> tuple[np.ndarray, int]:
     """
-    Carga un archivo de audio y retorna (audio, sample_rate).
-    audio shape: (channels, samples), dtype float32.
+    Lee un archivo de audio y lo devuelve normalizado como array float32.
+
+    Soporta WAV, FLAC y AIFF vía soundfile, y MP3 vía miniaudio (soundfile
+    no incluye decodificación MP3 en Python 3.13). El array resultante siempre
+    tiene forma (channels, samples) independientemente del formato de origen.
+
+    Args:
+        path: Ruta al archivo de audio.
+
+    Returns:
+        Tupla (audio, sample_rate) donde audio es float32 (channels, samples).
+
+    Raises:
+        ValueError: Si la extensión del archivo no está entre las soportadas.
     """
     ext = os.path.splitext(path)[1].lower()
 
@@ -25,7 +37,12 @@ def load_audio(path: str) -> tuple[np.ndarray, int]:
     return audio, sample_rate
 
 def _load_mp3(path: str) -> tuple[np.ndarray, int]:
-    """Loads MP3 via miniaudio (Python 3.13 compatible)."""
+    """
+    Decodifica un MP3 usando miniaudio y lo convierte a (channels, samples) float32.
+
+    miniaudio devuelve las muestras intercaladas (L, R, L, R…) en un buffer
+    contiguo; hay que reshape a (samples, channels) antes de transponer.
+    """
     import miniaudio
     decoded = miniaudio.mp3_read_file_f32(path)
     audio = np.frombuffer(decoded.samples, dtype=np.float32)
