@@ -88,13 +88,9 @@ class AudioPlayer(ctk.CTkFrame):
         before_active = self._mode == "before"
         self._before_btn.configure(
             fg_color="#1e6a9f" if before_active else "#1e3a5f",
-            border_width=2 if before_active else 0,
-            border_color="#60a5fa" if before_active else "transparent",
         )
         self._after_btn.configure(
-            fg_color="#5b1b9f" if before_active is False else "#2d1b69",
-            border_width=2 if not before_active else 0,
-            border_color="#a78bfa" if not before_active else "transparent",
+            fg_color="#5b1b9f" if not before_active else "#2d1b69",
         )
 
     def _toggle_play(self):
