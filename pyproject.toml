@@ -10,5 +10,5 @@ known-first-party = ["audio", "ui", "app"]
 
 [tool.pyright]
 pythonVersion = "3.13"
-typeCheckingMode = "basic"
+typeCheckingMode = "standard"
 reportMissingTypeStubs = false
