@@ -1,9 +1,49 @@
+# Virtual environment
 .venv/
+
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.so
+*.egg-info/
+.eggs/
+
+# Build & distribution
 dist/
 build/
 *.spec.bak
+
+# Test & coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.pyright/
+
+# Logs & temp
+*.log
+*.tmp
+*.bak
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Windows
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+._*
+
+# Claude / internal tools
 .superpowers/
 .claude/
