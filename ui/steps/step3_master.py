@@ -252,8 +252,13 @@ class Step3Master(ctk.CTkFrame):
             return
 
         subtype = "PCM_24" if "WAV" in fmt else None
-        sf.write(path, audio.T, sr, subtype=subtype)
-        self._status_label.configure(
-            text=f"💾 Guardado: {path.split('/')[-1].split(chr(92))[-1]}",
-            text_color="#4ade80",
-        )
+        try:
+            sf.write(path, audio.T, sr, subtype=subtype)
+            filename = path.split("/")[-1].split("\\")[-1]
+            self._status_label.configure(
+                text=f"💾 Guardado: {filename}", text_color="#4ade80"
+            )
+        except Exception as e:
+            self._status_label.configure(
+                text=f"Error al guardar: {e}", text_color="#ef4444"
+            )
