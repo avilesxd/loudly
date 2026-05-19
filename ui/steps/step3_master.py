@@ -191,7 +191,7 @@ class Step3Master(ctk.CTkFrame):
         """
         ref = self.session.get("reference_path")
         if ref:
-            name = ref.split("/")[-1].split("\\")[-1]
+            name = os.path.basename(ref)
             self._ref_info.configure(text=f"Referencia: {name}", text_color="#60a5fa")
             self._automaster_btn.configure(state="normal")
         else:
@@ -291,7 +291,7 @@ class Step3Master(ctk.CTkFrame):
         self, before: np.ndarray | None, after: np.ndarray | None, sr: int
     ):
         """
-        Calcula las métricas de análisis y actualiza las etiquetas de la UI.
+        Calcula las métricas de análisis en un hilo daemon y actualiza la UI.
 
         Métricas calculadas:
             LUFS: loudness integrado vía pyloudnorm (norma ITU-R BS.1770).
@@ -303,6 +303,7 @@ class Step3Master(ctk.CTkFrame):
                       más contraste entre partes suaves y fuertes.
 
         Si before o after son None, esas columnas no se actualizan.
+        El cálculo corre en un hilo daemon para no bloquear la UI en tracks largos.
         """
 
         def _metrics(audio):
@@ -312,20 +313,29 @@ class Step3Master(ctk.CTkFrame):
             dr = float(audio.std())
             return lufs, peak_db, dr
 
-        if before is not None:
-            lufs, peak_db, dr = _metrics(before)
-            self._analysis_before["lufs"].configure(text=f"{lufs:.1f} LUFS")
-            self._analysis_before["peak"].configure(text=f"{peak_db:.1f} dBTP")
-            self._analysis_before["dr"].configure(text=f"{dr * 100:.1f} DR")
+        def _work():
+            before_m = _metrics(before) if before is not None else None
+            after_m = _metrics(after) if after is not None else None
 
-        if after is not None:
-            lufs, peak_db, dr = _metrics(after)
-            self._analysis_after["lufs"].configure(text=f"{lufs:.1f} LUFS")
-            self._analysis_after["peak"].configure(
-                text=f"{peak_db:.1f} dBTP",
-                text_color="#4ade80" if peak_db < -0.1 else "#ef4444",
-            )
-            self._analysis_after["dr"].configure(text=f"{dr * 100:.1f} DR")
+            def _apply():
+                if before_m is not None:
+                    lufs, peak_db, dr = before_m
+                    self._analysis_before["lufs"].configure(text=f"{lufs:.1f} LUFS")
+                    self._analysis_before["peak"].configure(text=f"{peak_db:.1f} dBTP")
+                    self._analysis_before["dr"].configure(text=f"{dr * 100:.1f} DR")
+
+                if after_m is not None:
+                    lufs, peak_db, dr = after_m
+                    self._analysis_after["lufs"].configure(text=f"{lufs:.1f} LUFS")
+                    self._analysis_after["peak"].configure(
+                        text=f"{peak_db:.1f} dBTP",
+                        text_color="#4ade80" if peak_db < -0.1 else "#ef4444",
+                    )
+                    self._analysis_after["dr"].configure(text=f"{dr * 100:.1f} DR")
+
+            self.after(0, _apply)
+
+        threading.Thread(target=_work, daemon=True).start()
 
     def _export(self):
         """
@@ -363,7 +373,7 @@ class Step3Master(ctk.CTkFrame):
         subtype = "PCM_24" if "WAV" in fmt else None
         try:
             sf.write(path, audio.T, sr, subtype=subtype)
-            filename = path.split("/")[-1].split("\\")[-1]
+            filename = os.path.basename(path)
             self._status_label.configure(
                 text=f"💾 Guardado: {filename}", text_color="#4ade80"
             )

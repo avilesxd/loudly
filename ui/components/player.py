@@ -149,6 +149,7 @@ class AudioPlayer(ctk.CTkFrame):
                 if buf_now is None or self._position >= buf_now.shape[1]:
                     outdata[:] = 0
                     self._playing = False
+                    self.after(0, lambda: self._play_btn.configure(text="▶ Play"))
                     return
                 chunk = buf_now[:, self._position : self._position + frames]
                 # sounddevice expects (frames, channels)
@@ -159,6 +160,7 @@ class AudioPlayer(ctk.CTkFrame):
                     )
                     chunk_t = np.vstack([chunk_t, pad])
                     self._playing = False
+                    self.after(0, lambda: self._play_btn.configure(text="▶ Play"))
                 outdata[:] = chunk_t
                 self._position += frames
 

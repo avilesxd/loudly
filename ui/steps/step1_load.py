@@ -1,3 +1,5 @@
+import os
+import threading
 from tkinter import filedialog
 
 import customtkinter as ctk
@@ -14,10 +16,10 @@ class Step1Load(ctk.CTkFrame):
     """
     Paso 1 del wizard: selección del track principal y del track de referencia.
 
-    El track principal se decodifica aquí mismo con load_audio() y se almacena
-    en session["audio_data"]. El processed_audio se inicializa como copia del
-    audio original para que el paso 2 tenga algo que mostrar incluso si el usuario
-    no toca los sliders.
+    El track principal se decodifica en un hilo daemon para no bloquear la UI
+    durante la carga de archivos grandes. El processed_audio se inicializa como
+    copia del audio original para que el paso 2 tenga algo que mostrar incluso
+    si el usuario no toca los sliders.
 
     El track de referencia no se decodifica en este paso — matchering lo lee
     directamente desde disco en el paso 3, por eso solo se guarda la ruta.
@@ -52,12 +54,13 @@ class Step1Load(ctk.CTkFrame):
             font=ctk.CTkFont(size=13),
         )
         self._track_label.pack(expand=True)
-        ctk.CTkButton(
+        self._pick_btn = ctk.CTkButton(
             track_frame,
             text="Seleccionar track principal",
             command=self._pick_track,
             width=220,
-        ).pack(pady=(0, 12))
+        )
+        self._pick_btn.pack(pady=(0, 12))
 
         # Reference track (optional)
         ref_frame = ctk.CTkFrame(
@@ -97,29 +100,50 @@ class Step1Load(ctk.CTkFrame):
 
     def _pick_track(self):
         """
-        Abre el diálogo de selección, decodifica el archivo y actualiza el session.
+        Abre el diálogo de selección, luego decodifica el archivo en un hilo daemon.
 
-        Si la carga falla (formato inválido, archivo corrupto, codec faltante, etc.)
-        muestra el error en la UI en lugar de propagar la excepción.
-        El botón Siguiente solo se habilita tras una carga exitosa.
+        El diálogo debe ejecutarse en el hilo principal (Tkinter). Solo la
+        decodificación con load_audio se corre en el hilo, para no bloquear la UI
+        con archivos grandes. El botón se deshabilita durante la carga para evitar
+        lanzar múltiples hilos simultáneos.
         """
         path = filedialog.askopenfilename(filetypes=SUPPORTED)
         if not path:
             return
-        try:
-            audio, sr = load_audio(path)
-            self.session["audio_path"] = path
-            self.session["audio_data"] = audio
-            self.session["sample_rate"] = sr
-            self.session["processed_audio"] = audio.copy()
-            name = path.split("/")[-1].split("\\")[-1]
-            self._track_label.configure(
-                text=f"✅  {name}  ({sr} Hz, {audio.shape[0]}ch)", text_color="#4ade80"
-            )
-            self._error_label.configure(text="")
-            self._next_btn.configure(state="normal")
-        except Exception as e:
-            self._error_label.configure(text=f"Error: {e}")
+
+        self._pick_btn.configure(state="disabled")
+        self._next_btn.configure(state="disabled")
+        self._track_label.configure(text="⏳  Cargando…", text_color="#888888")
+        self._error_label.configure(text="")
+
+        def _work():
+            try:
+                audio, sr = load_audio(path)
+
+                def _on_success():
+                    self.session.update({
+                        "audio_path": path,
+                        "audio_data": audio,
+                        "sample_rate": sr,
+                        "processed_audio": audio.copy(),
+                        "mastered_audio": None,
+                    })
+                    name = os.path.basename(path)
+                    self._track_label.configure(
+                        text=f"✅  {name}  ({sr} Hz, {audio.shape[0]}ch)",
+                        text_color="#4ade80",
+                    )
+                    self._pick_btn.configure(state="normal")
+                    self._next_btn.configure(state="normal")
+
+                self.after(0, _on_success)
+            except Exception as e:
+                def _on_error(err=str(e)):
+                    self._error_label.configure(text=f"Error: {err}")
+                    self._pick_btn.configure(state="normal")
+                self.after(0, _on_error)
+
+        threading.Thread(target=_work, daemon=True).start()
 
     def _pick_reference(self):
         """
@@ -132,7 +156,7 @@ class Step1Load(ctk.CTkFrame):
         if not path:
             return
         self.session["reference_path"] = path
-        name = path.split("/")[-1].split("\\")[-1]
+        name = os.path.basename(path)
         self._ref_label.configure(text=f"✅  Referencia: {name}", text_color="#60a5fa")
 
     def _advance(self):
