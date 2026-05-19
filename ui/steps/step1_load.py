@@ -1,4 +1,3 @@
-# ui/steps/step1_load.py
 import customtkinter as ctk
 from tkinter import filedialog
 from audio.loader import load_audio

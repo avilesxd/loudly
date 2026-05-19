@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+dist/
+build/
+*.spec.bak
+.superpowers/
+.claude/

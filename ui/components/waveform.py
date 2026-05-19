@@ -1,7 +1,7 @@
-# ui/components/waveform.py
 import numpy as np
 import customtkinter as ctk
 import matplotlib
+
 matplotlib.use("TkAgg")
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg

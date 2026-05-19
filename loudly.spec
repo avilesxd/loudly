@@ -1,10 +1,8 @@
-# loudly.spec
 from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 import sys
 
 block_cipher = None
 
-# matchering needs its data files
 datas = []
 datas += collect_data_files("matchering")
 datas += collect_data_files("customtkinter")

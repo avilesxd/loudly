@@ -1,4 +1,3 @@
-# tests/test_eq.py
 import numpy as np
 import pytest
 from audio.eq import apply_eq

@@ -1,4 +1,3 @@
-# audio/loader.py
 import numpy as np
 import soundfile as sf
 import tempfile

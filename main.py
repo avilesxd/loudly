@@ -1,4 +1,3 @@
-# main.py
 from app import LoudlyApp
 
 if __name__ == "__main__":

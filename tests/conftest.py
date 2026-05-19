@@ -1,4 +1,3 @@
-# tests/conftest.py
 import numpy as np
 import soundfile as sf
 import pytest

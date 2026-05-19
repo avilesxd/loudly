@@ -1,4 +1,3 @@
-# audio/eq.py
 import numpy as np
 from pedalboard import Pedalboard, LowShelfFilter, HighShelfFilter, PeakFilter
 

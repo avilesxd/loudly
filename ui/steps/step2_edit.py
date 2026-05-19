@@ -1,4 +1,3 @@
-# ui/steps/step2_edit.py
 import customtkinter as ctk
 import numpy as np
 import threading
