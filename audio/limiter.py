@@ -46,6 +46,8 @@ def apply_limiter(
         a −0.3 dBFS.
     """
     current_lufs = measure_lufs(audio, sample_rate)
+    if not np.isfinite(current_lufs):
+        raise ValueError("El audio es silencio o demasiado débil para normalizar.")
 
     normalized = pyln.normalize.loudness(
         audio.T.astype(np.float64), current_lufs, target_lufs

@@ -232,10 +232,20 @@ class Step3Master(ctk.CTkFrame):
         self._progress.start()
 
         def _work():
+            tmp_in = None
+            tmp_out = None
             try:
                 processed = self.session["processed_audio"]
                 sr = self.session["sample_rate"]
                 ref_path = self.session["reference_path"]
+
+                ref_info = sf.info(ref_path)
+                if ref_info.samplerate != sr:
+                    raise ValueError(
+                        f"El sample rate de la referencia ({ref_info.samplerate} Hz) "
+                        f"no coincide con el del track ({sr} Hz). "
+                        f"Convertí la referencia a {sr} Hz antes de continuar."
+                    )
 
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                     tmp_in = f.name
@@ -247,12 +257,17 @@ class Step3Master(ctk.CTkFrame):
 
                 mastered, _ = load_audio(tmp_out)
                 self.session["mastered_audio"] = mastered
-                os.unlink(tmp_in)
-                os.unlink(tmp_out)
 
                 self.after(0, lambda: self._on_automaster_done(mastered, sr))
             except Exception as e:
                 self.after(0, lambda err=e: self._on_automaster_error(str(err)))
+            finally:
+                for path in (tmp_in, tmp_out):
+                    if path and os.path.exists(path):
+                        try:
+                            os.unlink(path)
+                        except OSError:
+                            pass
 
         threading.Thread(target=_work, daemon=True).start()
 
