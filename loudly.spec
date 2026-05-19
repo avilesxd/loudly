@@ -48,4 +48,5 @@ exe = EXE(
     console=False,
     icon=None,
     onefile=True,
+    version="version_info.txt",
 )
