@@ -44,8 +44,8 @@ class AudioPlayer(ctk.CTkFrame):
 
         self._before_btn = ctk.CTkButton(
             btn_frame,
-            text="ANTES",
-            width=70,
+            text="Original",
+            width=75,
             fg_color="#1e3a5f",
             hover_color="#2d5a8f",
             command=lambda: self._set_mode("before"),
@@ -54,10 +54,11 @@ class AudioPlayer(ctk.CTkFrame):
 
         self._after_btn = ctk.CTkButton(
             btn_frame,
-            text="DESPUÉS",
-            width=80,
+            text="Procesado",
+            width=90,
             fg_color="#2d1b69",
             hover_color="#3d2b89",
+            state="disabled",
             command=lambda: self._set_mode("after"),
         )
         self._after_btn.pack(side="left", padx=2)
@@ -73,10 +74,18 @@ class AudioPlayer(ctk.CTkFrame):
         self._after = after
         self._sample_rate = sample_rate
         self._position = 0
+        if after is not None:
+            self._after_btn.configure(state="normal")
+        else:
+            self._after_btn.configure(state="disabled")
+            if self._mode == "after":
+                self._mode = "before"
+                self._update_mode_buttons()
 
     def set_after(self, after: np.ndarray):
         """Update AFTER buffer without stopping BEFORE playback."""
         self._after = after
+        self._after_btn.configure(state="normal")
 
     def _current_buffer(self) -> np.ndarray | None:
         if self._mode == "after" and self._after is not None:
