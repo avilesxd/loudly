@@ -5,7 +5,7 @@ import tempfile
 import os
 
 SUPPORTED_EXTENSIONS = {".wav", ".flac", ".aiff", ".aif"}
-PYDUB_EXTENSIONS = {".mp3"}
+MINIAUDIO_EXTENSIONS = {".mp3"}
 
 def load_audio(path: str) -> tuple[np.ndarray, int]:
     """
@@ -14,9 +14,8 @@ def load_audio(path: str) -> tuple[np.ndarray, int]:
     """
     ext = os.path.splitext(path)[1].lower()
 
-    if ext in PYDUB_EXTENSIONS:
-        path = _convert_to_wav(path)
-        ext = ".wav"
+    if ext in MINIAUDIO_EXTENSIONS:
+        return _load_mp3(path)
 
     if ext not in SUPPORTED_EXTENSIONS:
         raise ValueError(f"Formato no soportado: {ext}")
@@ -26,10 +25,11 @@ def load_audio(path: str) -> tuple[np.ndarray, int]:
     audio = data.T
     return audio, sample_rate
 
-def _convert_to_wav(path: str) -> str:
-    """Converts MP3 to temp WAV and returns the WAV path."""
-    from pydub import AudioSegment  # lazy import — pydub requires pyaudioop (not on Py 3.13 stdlib)
-    segment = AudioSegment.from_mp3(path)
-    tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-    segment.export(tmp.name, format="wav")
-    return tmp.name
+def _load_mp3(path: str) -> tuple[np.ndarray, int]:
+    """Loads MP3 via miniaudio (Python 3.13 compatible)."""
+    import miniaudio
+    decoded = miniaudio.mp3_read_file_f32(path)
+    audio = np.frombuffer(decoded.samples, dtype=np.float32)
+    # miniaudio returns interleaved samples → reshape to (samples, channels)
+    audio = audio.reshape(-1, decoded.nchannels).T  # → (channels, samples)
+    return audio, decoded.sample_rate
