@@ -1,34 +1,61 @@
 # Loudly — Masterizador de Audio
 
-Aplicación de escritorio para masterizar temas musicales. Wizard de 3 pasos: carga tu track, ajusta EQ y loudness, y aplica auto-masterización por referencia.
+<div align="center">
+
+[![CI](https://github.com/avilesxd/loudly/actions/workflows/ci.yml/badge.svg)](https://github.com/avilesxd/loudly/actions/workflows/ci.yml)
+[![Release](https://github.com/avilesxd/loudly/actions/workflows/release.yml/badge.svg)](https://github.com/avilesxd/loudly/actions/workflows/release.yml)
+[![Latest Release](https://img.shields.io/github/v/release/avilesxd/loudly.svg)](https://github.com/avilesxd/loudly/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/avilesxd/loudly/total.svg)](https://github.com/avilesxd/loudly/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/avilesxd/loudly/blob/main/LICENSE)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
+
+Aplicación de escritorio para masterizar temas musicales. Wizard de 3 pasos: cargá tu track, ajustá EQ y loudness, y aplicá auto-masterización por referencia.
+
+<a href="https://github.com/avilesxd/loudly/releases/latest">
+  <img src="https://img.shields.io/badge/📥_Descargar_Loudly-Windows-blue?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar"/>
+</a>
+
+</div>
+
+---
+
+<div align="center">
+
+| 📂 Paso 1 — Cargar track | 🎚️ Paso 2 — EQ y Limitador | ⚡ Paso 3 — Auto-Master |
+| :-----------------------: | :-------------------------: | :---------------------: |
+| ![Paso 1](docs/images/step1-load.png) | ![Paso 2](docs/images/step2-edit.png) | ![Paso 3](docs/images/step3-master.png) |
+
+</div>
 
 ## Características
 
 - **EQ de 4 bandas** — Low (80 Hz), Low-Mid (250 Hz), Hi-Mid (2.5 kHz), High (8 kHz)
 - **Limitador con control LUFS** — normaliza a estándares de streaming (Spotify −14, YouTube −13, CD −9)
 - **Auto-Master por referencia** — iguala automáticamente el EQ, loudness y dinámica de un track de referencia usando [matchering](https://github.com/sergree/matchering)
-- **Reproductor con toggle Antes/Después** — escucha la diferencia en tiempo real
+- **Reproductor con toggle Antes/Después** — escuchá la diferencia en tiempo real
 - **Análisis comparativo** — muestra LUFS, True Peak y Dinámica antes y después del procesado
 - **Exporta a WAV 24-bit o FLAC**
 
 ## Formatos soportados
 
-| Entrada | Salida |
-|---------|--------|
-| WAV, MP3, FLAC, AIFF | WAV 24-bit, FLAC |
+| Entrada               | Salida            |
+| --------------------- | ----------------- |
+| WAV, MP3, FLAC, AIFF  | WAV 24-bit, FLAC  |
+
+## Instalación (uso)
+
+Descargá el instalador desde [Releases](https://github.com/avilesxd/loudly/releases/latest).
+No requiere Python instalado — es un ejecutable standalone para Windows.
 
 ## Instalación (desarrollo)
 
 Requiere Python 3.13.
 
 ```bash
+git clone https://github.com/avilesxd/loudly.git
+cd loudly
 python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt
-```
-
-## Uso
-
-```bash
 .venv\Scripts\python main.py
 ```
 
@@ -38,7 +65,7 @@ python -m venv .venv
 .venv\Scripts\pyinstaller loudly.spec --clean
 ```
 
-El ejecutable queda en `dist\Loudly.exe`. Es standalone — no requiere Python instalado.
+El ejecutable queda en `dist\Loudly.exe`.
 
 ## Tests
 
@@ -73,12 +100,6 @@ El estado de la sesión se mantiene en un diccionario `session` en `LoudlyApp` y
 
 Todos los arrays internos son `(channels, samples)` en `float32`. Las bibliotecas externas (soundfile, pyloudnorm) usan `(samples, channels)` y se transponen en los puntos de integración.
 
-### Modelo de hilos
-
-- **Step2Edit**: un hilo por reprocess; un contador de generación descarta resultados obsoletos si llegan tras un ajuste posterior.
-- **Step3Master**: un hilo único para matchering; el botón se deshabilita mientras procesa.
-- Comunicación de vuelta al hilo UI vía `widget.after(0, callback)`.
-
 ## Stack
 
 - **UI**: CustomTkinter
@@ -87,10 +108,28 @@ Todos los arrays internos son `(channels, samples)` en `float32`. Las biblioteca
 - **LUFS**: pyloudnorm
 - **Playback**: sounddevice
 - **Waveform**: matplotlib (backend TkAgg)
-- **MP3**: miniaudio (compatible con Python 3.13)
+- **MP3**: miniaudio
 - **Build**: PyInstaller
 
 ## Documentación adicional
 
 - [Guía de usuario](docs/user-guide.md) — cómo usar la aplicación paso a paso
 - [Arquitectura](docs/architecture.md) — detalles técnicos del diseño
+
+## Contribuir
+
+¡Las contribuciones son bienvenidas! Leé la [guía de contribución](.github/CONTRIBUTING.md) para empezar.
+
+Si encontrás un bug o tenés una idea, abrí un [issue](https://github.com/avilesxd/loudly/issues/new/choose).
+
+## Licencia
+
+Distribuido bajo la licencia MIT. Ver [LICENSE](LICENSE) para más información.
+
+---
+
+<div align="center">
+
+_Hecho con ❤️ por [Ignacio Avilés](www.linkedin.com/in/ignacioavilescardenasso)_
+
+</div>
