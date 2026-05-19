@@ -121,13 +121,15 @@ class Step1Load(ctk.CTkFrame):
                 audio, sr = load_audio(path)
 
                 def _on_success():
-                    self.session.update({
-                        "audio_path": path,
-                        "audio_data": audio,
-                        "sample_rate": sr,
-                        "processed_audio": audio.copy(),
-                        "mastered_audio": None,
-                    })
+                    self.session.update(
+                        {
+                            "audio_path": path,
+                            "audio_data": audio,
+                            "sample_rate": sr,
+                            "processed_audio": audio.copy(),
+                            "mastered_audio": None,
+                        }
+                    )
                     name = os.path.basename(path)
                     self._track_label.configure(
                         text=f"✅  {name}  ({sr} Hz, {audio.shape[0]}ch)",
@@ -138,9 +140,11 @@ class Step1Load(ctk.CTkFrame):
 
                 self.after(0, _on_success)
             except Exception as e:
+
                 def _on_error(err=str(e)):
                     self._error_label.configure(text=f"Error: {err}")
                     self._pick_btn.configure(state="normal")
+
                 self.after(0, _on_error)
 
         threading.Thread(target=_work, daemon=True).start()
