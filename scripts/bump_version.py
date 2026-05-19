@@ -51,7 +51,7 @@ def bump(new_version: str) -> None:
 
     run(["git", "add", "version_info.txt"])
     run(["git", "commit", "-m", f"chore(release): bump version to {ver}"])
-    run(["git", "tag", tag])
+    run(["git", "tag", "-a", tag, "-m", f"Release {tag}"])
     run(["git", "push", "--follow-tags"])
 
     print(f"\nTag {tag} publicado. GitHub Actions compilará y creará el release.")
