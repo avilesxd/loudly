@@ -16,6 +16,7 @@ class Step2Edit(ctk.CTkFrame):
         self.on_back = on_back
         self.on_next = on_next
         self._debounce_id = None
+        self._process_gen = 0
         self._build_ui()
 
     def _build_ui(self):
@@ -141,14 +142,25 @@ class Step2Edit(ctk.CTkFrame):
         eq_p = self.session["eq_params"]
         lufs_target = self.session["lufs_target"]
 
+        self._process_gen += 1
+        gen = self._process_gen
+
         def _work():
-            eq_out = apply_eq(audio, self.session["sample_rate"],
-                              eq_p["low"], eq_p["low_mid"],
-                              eq_p["hi_mid"], eq_p["high"])
-            limited = apply_limiter(eq_out, self.session["sample_rate"], lufs_target)
-            self.session["processed_audio"] = limited
-            self.after(0, lambda: self._player.set_after(limited))
-            self.after(0, self._update_lufs_display)
+            try:
+                eq_out = apply_eq(audio, self.session["sample_rate"],
+                                  eq_p["low"], eq_p["low_mid"],
+                                  eq_p["hi_mid"], eq_p["high"])
+                limited = apply_limiter(eq_out, self.session["sample_rate"], lufs_target)
+                if gen != self._process_gen:
+                    return
+                self.session["processed_audio"] = limited
+                self.after(0, lambda: self._player.set_after(limited))
+                self.after(0, self._update_lufs_display)
+            except Exception as e:
+                if gen == self._process_gen:
+                    self.after(0, lambda err=str(e): self._lufs_current.configure(
+                        text=f"Error al procesar: {err}", text_color="#ef4444"
+                    ))
 
         threading.Thread(target=_work, daemon=True).start()
 
@@ -157,4 +169,4 @@ class Step2Edit(ctk.CTkFrame):
         if audio is None:
             return
         lufs = measure_lufs(audio, self.session["sample_rate"])
-        self._lufs_current.configure(text=f"actual: {lufs:.1f} LUFS")
+        self._lufs_current.configure(text=f"actual: {lufs:.1f} LUFS", text_color="#888888")
