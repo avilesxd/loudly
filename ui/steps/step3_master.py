@@ -56,6 +56,9 @@ class Step3Master(ctk.CTkFrame):
         )
         self._status_label.pack(padx=14, pady=4)
 
+        self._progress = ctk.CTkProgressBar(left, mode="indeterminate", width=260)
+        # not packed — shown only during processing
+
         # Export section
         export_frame = ctk.CTkFrame(left, corner_radius=8, fg_color="#111111")
         export_frame.pack(fill="x", padx=14, pady=12)
@@ -168,6 +171,8 @@ class Step3Master(ctk.CTkFrame):
             text="Aplicando matchering, puede tardar unos segundos…",
             text_color="#888888",
         )
+        self._progress.pack(padx=14, pady=(0, 8))
+        self._progress.start()
 
         def _work():
             try:
@@ -195,12 +200,16 @@ class Step3Master(ctk.CTkFrame):
         threading.Thread(target=_work, daemon=True).start()
 
     def _on_automaster_done(self, mastered: np.ndarray, sr: int):
+        self._progress.stop()
+        self._progress.pack_forget()
         self._automaster_btn.configure(state="normal", text="⚡ Aplicar Auto-Master")
         self._status_label.configure(text="✅ Auto-master aplicado", text_color="#4ade80")
         self._player.set_after(mastered)
         self._update_analysis(self.session.get("processed_audio"), mastered, sr)
 
     def _on_automaster_error(self, error: str):
+        self._progress.stop()
+        self._progress.pack_forget()
         self._automaster_btn.configure(state="normal", text="⚡ Aplicar Auto-Master")
         self._status_label.configure(text=f"Error: {error}", text_color="#ef4444")
 
