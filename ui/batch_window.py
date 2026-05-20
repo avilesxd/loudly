@@ -119,9 +119,7 @@ class BatchWindow(ctk.CTkToplevel):
         if not path:
             return
         self._ref_path = path
-        self._ref_label.configure(
-            text=os.path.basename(path), text_color="#60a5fa"
-        )
+        self._ref_label.configure(text=os.path.basename(path), text_color="#60a5fa")
         self._refresh_process_btn()
 
     def _add_tracks(self):
@@ -186,15 +184,12 @@ class BatchWindow(ctk.CTkToplevel):
         self._cancel = False
         self._process_btn.configure(state="disabled", text="⏳ Procesando…")
         self._status_label.configure(text="Procesando…", text_color="#888888")
-        self._worker_thread = threading.Thread(
-            target=self._process_all, daemon=True
-        )
+        self._worker_thread = threading.Thread(target=self._process_all, daemon=True)
         self._worker_thread.start()
 
     def _process_all(self):
         pending = [
-            (i, item) for i, item in enumerate(self._items)
-            if item.status == "pending"
+            (i, item) for i, item in enumerate(self._items) if item.status == "pending"
         ]
         total = len(pending)
 
@@ -202,9 +197,9 @@ class BatchWindow(ctk.CTkToplevel):
             if self._cancel:
                 break
 
-            self._safe_after(0, lambda i=idx: self._set_row_status(
-                i, "⚙️ procesando…", "#f59e0b"
-            ))
+            self._safe_after(
+                0, lambda i=idx: self._set_row_status(i, "⚙️ procesando…", "#f59e0b")
+            )
 
             tmp_in = tmp_out = None
             try:
@@ -230,17 +225,18 @@ class BatchWindow(ctk.CTkToplevel):
                 sf.write(out_path, mastered.T, sr, subtype="PCM_24")
 
                 item.status = "done"
-                self._safe_after(0, lambda i=idx: self._set_row_status(
-                    i, "✅ listo", "#4ade80"
-                ))
+                self._safe_after(
+                    0, lambda i=idx: self._set_row_status(i, "✅ listo", "#4ade80")
+                )
 
             except Exception as e:
                 msg = str(e)[:60]
                 item.status = "error"
                 item.message = msg
-                self._safe_after(0, lambda i=idx, m=msg: self._set_row_status(
-                    i, f"❌ {m}", "#ef4444"
-                ))
+                self._safe_after(
+                    0,
+                    lambda i=idx, m=msg: self._set_row_status(i, f"❌ {m}", "#ef4444"),
+                )
 
             finally:
                 for p in (tmp_in, tmp_out):
@@ -250,9 +246,12 @@ class BatchWindow(ctk.CTkToplevel):
                         except OSError:
                             pass
 
-            self._safe_after(0, lambda n=done_count, t=total: self._status_label.configure(
-                text=f"{n}/{t} procesados", text_color="#888888"
-            ))
+            self._safe_after(
+                0,
+                lambda n=done_count, t=total: self._status_label.configure(
+                    text=f"{n}/{t} procesados", text_color="#888888"
+                ),
+            )
 
         if not self._cancel:
             done = sum(1 for item in self._items if item.status == "done")

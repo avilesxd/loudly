@@ -1,4 +1,4 @@
-from ui.batch_window import _remastered_path, BatchItem
+from ui.batch_window import BatchItem, _remastered_path
 
 
 def test_remastered_path_wav():
@@ -10,7 +10,10 @@ def test_remastered_path_flac():
 
 
 def test_remastered_path_mp3():
-    assert _remastered_path("/some/folder/my track.mp3") == "/some/folder/my track_remastered.wav"
+    assert (
+        _remastered_path("/some/folder/my track.mp3")
+        == "/some/folder/my track_remastered.wav"
+    )
 
 
 def test_batch_item_defaults():
