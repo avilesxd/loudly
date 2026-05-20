@@ -1,0 +1,70 @@
+name: Auto Version & Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  auto-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Skip release commits (avoid loop)
+        id: guard
+        shell: bash
+        run: |
+          MSG=$(git log -1 --pretty=format:"%s")
+          if [[ "$MSG" == "chore(release):"* ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Python 3.13
+        if: steps.guard.outputs.skip == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        if: steps.guard.outputs.skip == 'false'
+        run: pip install -r requirements.txt
+
+      - name: Determine and apply version bump
+        if: steps.guard.outputs.skip == 'false'
+        id: bump
+        run: python scripts/auto_bump.py
+
+      - name: Build executable
+        if: steps.bump.outputs.released == 'true'
+        run: pyinstaller loudly.spec
+
+      - name: Generate release notes
+        if: steps.bump.outputs.released == 'true'
+        uses: orhun/git-cliff-action@v4
+        id: cliff
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG_RELEASE.md
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.bump.outputs.released == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.bump.outputs.new_tag }} `
+            dist/Loudly.exe `
+            --title "Loudly ${{ steps.bump.outputs.new_tag }}" `
+            --notes-file CHANGELOG_RELEASE.md
