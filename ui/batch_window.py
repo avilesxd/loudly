@@ -5,8 +5,6 @@ from dataclasses import dataclass, field
 from tkinter import filedialog
 from typing import Literal
 
-import numpy as np
-
 import customtkinter as ctk
 import soundfile as sf
 
