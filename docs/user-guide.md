@@ -76,6 +76,40 @@ Compara las métricas **ANTES** (audio con EQ/limiter del paso 2) y **DESPUÉS**
 
 ---
 
+---
+
+## Procesamiento batch (múltiples tracks)
+
+El modo batch permite auto-masterizar varios tracks contra una misma referencia sin pasar por el wizard principal.
+
+### Abrir la ventana batch
+
+En el **Paso 1**, hacé clic en **Procesar múltiples tracks (batch)**.
+
+### Flujo de trabajo
+
+1. Hacé clic en **Elegir** y seleccioná el track de referencia (WAV, MP3, FLAC o AIFF).
+2. Hacé clic en **+ Agregar tracks** y seleccioná uno o varios archivos a procesar (podés seleccionar varios a la vez). Los duplicados se ignoran automáticamente.
+3. Cuando haya al menos un track y una referencia cargados, el botón **⚡ Procesar todos** se habilita.
+4. Hacé clic en **⚡ Procesar todos** — cada track se procesa de forma secuencial. El estado de cada fila se actualiza en tiempo real:
+
+   | Estado | Significado |
+   |--------|-------------|
+   | ⏳ en cola | Esperando procesamiento |
+   | ⚙️ procesando… | matchering en curso |
+   | ✅ listo | Exportado con éxito |
+   | ❌ mensaje | Error — el detalle aparece en la fila |
+
+5. El archivo exportado se guarda en la misma carpeta que el original con el sufijo `_remastered.wav`. Por ejemplo: `mi_cancion.mp3` → `mi_cancion_remastered.wav`.
+
+> **Nota:** el batch aplica únicamente Auto-Master (matchering). No incluye el EQ ni el limitador del wizard principal.
+
+> **Nota:** si el sample rate del track no coincide con el de la referencia, ese item falla pero el resto continúa procesándose.
+
+Cerrar la ventana durante el procesamiento cancela los items pendientes; los que ya finalizaron conservan su archivo exportado.
+
+---
+
 ## Flujos de trabajo comunes
 
 ### Normalización rápida a streaming

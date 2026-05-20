@@ -32,9 +32,9 @@ Aplicación de escritorio para masterizar temas musicales. Wizard de 3 pasos: ca
 
 <div align="center">
 
-| 📂 Paso 1 — Cargar track | 🎚️ Paso 2 — EQ y Limitador | ⚡ Paso 3 — Auto-Master |
-| :-----------------------: | :-------------------------: | :---------------------: |
-| ![Paso 1](docs/images/step1-load.png) | ![Paso 2](docs/images/step2-edit.png) | ![Paso 3](docs/images/step3-master.png) |
+| 📂 Paso 1 — Cargar track | 🎚️ Paso 2 — EQ y Limitador | ⚡ Paso 3 — Auto-Master | 🗂️ Batch Processing |
+| :-----------------------: | :-------------------------: | :---------------------: | :------------------: |
+| ![Paso 1](docs/images/step1-load.png) | ![Paso 2](docs/images/step2-edit.png) | ![Paso 3](docs/images/step3-master.png) | ![Batch](docs/images/batch-window.png) |
 
 </div>
 
@@ -43,6 +43,7 @@ Aplicación de escritorio para masterizar temas musicales. Wizard de 3 pasos: ca
 - **EQ de 4 bandas** — Low (80 Hz), Low-Mid (250 Hz), Hi-Mid (2.5 kHz), High (8 kHz)
 - **Limitador con control LUFS** — normaliza a estándares de streaming (Spotify −14, YouTube −13, CD −9)
 - **Auto-Master por referencia** — iguala automáticamente el EQ, loudness y dinámica de un track de referencia usando [matchering](https://github.com/sergree/matchering)
+- **Procesamiento batch** — auto-masteriza múltiples tracks contra una referencia y los exporta automáticamente como `<nombre>_remastered.wav`
 - **Reproductor con toggle Antes/Después** — escuchá la diferencia en tiempo real
 - **Análisis comparativo** — muestra LUFS, True Peak y Dinámica antes y después del procesado
 - **Exporta a WAV 24-bit o FLAC**
@@ -96,6 +97,7 @@ loudly/
 │   ├── limiter.py       # Normalización LUFS + true-peak limiter
 │   └── automaster.py    # Auto-masterización con matchering
 └── ui/
+    ├── batch_window.py      # Ventana de procesamiento batch (CTkToplevel)
     ├── steps/
     │   ├── step1_load.py    # Paso 1: carga de archivos
     │   ├── step2_edit.py    # Paso 2: EQ + limiter interactivos

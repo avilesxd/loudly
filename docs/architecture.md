@@ -113,6 +113,50 @@ El track de referencia puede ser cualquier formato soportado porque matchering l
 
 ---
 
+## BatchWindow
+
+`ui/batch_window.py` implementa procesamiento batch como ventana independiente (`CTkToplevel`) lanzada desde Step 1.
+
+### Estructuras de datos
+
+```python
+@dataclass
+class BatchItem:
+    path: str
+    status: Literal["pending", "processing", "done", "error"] = "pending"
+    message: str = ""
+```
+
+`_remastered_path(source_path)` deriva la ruta de salida: reemplaza la extensión original con `_remastered.wav` en la misma carpeta.
+
+### Modelo de hilos
+
+Un único hilo daemon (`_process_all`) procesa los items secuencialmente. El flag `_cancel` se activa al cerrar la ventana (`WM_DELETE_WINDOW`) para abortar los items pendientes; los items ya completados conservan su archivo exportado.
+
+```
+_start_batch()
+    │
+    └── hilo daemon: _process_all()
+            │
+            ├── por cada BatchItem (status == "pending"):
+            │       if _cancel: break
+            │       load_audio(item.path)
+            │       WAV temporal → apply_automaster() → WAV temporal
+            │       load_audio(resultado) → sf.write(_remastered.wav)
+            │       _safe_after(0, actualizar UI)
+            │       limpiar temporales
+            │
+            └── _on_batch_done() — re-habilita botón, muestra resumen
+```
+
+La comunicación con la UI usa `_safe_after()` (wrapper de `widget.after(0, cb)` con guard `winfo_exists()`) para tolerar el caso en que la ventana se cierra mientras el hilo aún procesa.
+
+### Habilitación del botón
+
+`_refresh_process_btn()` habilita "⚡ Procesar todos" solo cuando hay al menos un item `pending`, hay referencia cargada, y no hay hilo activo. Se llama tras cada `_add_tracks` y `_pick_reference`, y al finalizar el batch.
+
+---
+
 ## Compilación con PyInstaller
 
 `loudly.spec` empaqueta todo en un único `.exe` standalone. Los hooks de PyInstaller para numpy, soundfile y matchering se incluyen implícitamente. El binario resultante en `dist\Loudly.exe` no requiere Python instalado.
