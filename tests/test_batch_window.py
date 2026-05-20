@@ -1,5 +1,4 @@
 import pytest
-from unittest.mock import patch, MagicMock
 from ui.batch_window import _remastered_path, BatchItem
 
 
