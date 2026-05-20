@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
 from tkinter import filedialog
 from typing import Literal
 
+import numpy as np
+
 import customtkinter as ctk
 import soundfile as sf
 
@@ -176,7 +178,98 @@ class BatchWindow(ctk.CTkToplevel):
         self._process_btn.configure(state="normal" if can_run else "disabled")
 
     def _start_batch(self):
-        pass
+        self._cancel = False
+        self._process_btn.configure(state="disabled", text="⏳ Procesando…")
+        self._status_label.configure(text="Procesando…", text_color="#888888")
+        self._worker_thread = threading.Thread(
+            target=self._process_all, daemon=True
+        )
+        self._worker_thread.start()
+
+    def _process_all(self):
+        pending = [
+            (i, item) for i, item in enumerate(self._items)
+            if item.status == "pending"
+        ]
+        total = len(pending)
+
+        for done_count, (idx, item) in enumerate(pending, start=1):
+            if self._cancel:
+                break
+
+            self.after(0, lambda i=idx: self._set_row_status(
+                i, "⚙️ procesando…", "#f59e0b"
+            ))
+
+            tmp_in = tmp_out = None
+            try:
+                audio, sr = load_audio(item.path)
+
+                ref_info = sf.info(self._ref_path)
+                if ref_info.samplerate != sr:
+                    raise ValueError(
+                        f"Sample rate mismatch: track={sr} Hz, "
+                        f"ref={ref_info.samplerate} Hz"
+                    )
+
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                    tmp_in = f.name
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                    tmp_out = f.name
+
+                sf.write(tmp_in, audio.T, sr, subtype="PCM_24")
+                apply_automaster(tmp_in, self._ref_path, tmp_out)
+
+                mastered, _ = load_audio(tmp_out)
+                out_path = _remastered_path(item.path)
+                sf.write(out_path, mastered.T, sr, subtype="PCM_24")
+
+                item.status = "done"
+                self.after(0, lambda i=idx: self._set_row_status(
+                    i, "✅ listo", "#4ade80"
+                ))
+
+            except Exception as e:
+                msg = str(e)[:60]
+                item.status = "error"
+                item.message = msg
+                self.after(0, lambda i=idx, m=msg: self._set_row_status(
+                    i, f"❌ {m}", "#ef4444"
+                ))
+
+            finally:
+                for p in (tmp_in, tmp_out):
+                    if p and os.path.exists(p):
+                        try:
+                            os.unlink(p)
+                        except OSError:
+                            pass
+
+            self.after(0, lambda n=done_count, t=total: self._status_label.configure(
+                text=f"{n}/{t} procesados", text_color="#888888"
+            ))
+
+        if not self._cancel:
+            done = sum(1 for item in self._items if item.status == "done")
+            errors = sum(1 for item in self._items if item.status == "error")
+            self.after(0, lambda d=done, e=errors: self._on_batch_done(d, e))
+
+    def _set_row_status(self, idx: int, text: str, color: str):
+        if idx < len(self._rows):
+            self._rows[idx]["status"].configure(text=text, text_color=color)
+
+    def _on_batch_done(self, done: int, errors: int):
+        self._process_btn.configure(state="normal", text="⚡ Procesar todos")
+        if errors == 0:
+            self._status_label.configure(
+                text=f"✅ {done} track(s) exportados exitosamente",
+                text_color="#4ade80",
+            )
+        else:
+            self._status_label.configure(
+                text=f"✅ {done} listo(s) — ❌ {errors} con error",
+                text_color="#f59e0b",
+            )
 
     def _on_close(self):
         self._cancel = True
