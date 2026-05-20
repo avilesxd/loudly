@@ -43,6 +43,7 @@ class BatchWindow(ctk.CTkToplevel):
         self._worker_thread: threading.Thread | None = None
 
         self._build_ui()
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _build_ui(self):
         # Reference row
@@ -112,10 +113,71 @@ class BatchWindow(ctk.CTkToplevel):
         self._status_label.pack(pady=(0, 8))
 
     def _pick_reference(self):
-        pass
+        path = filedialog.askopenfilename(
+            parent=self, filetypes=SUPPORTED, title="Seleccionar referencia"
+        )
+        if not path:
+            return
+        self._ref_path = path
+        self._ref_label.configure(
+            text=os.path.basename(path), text_color="#60a5fa"
+        )
+        self._refresh_process_btn()
 
     def _add_tracks(self):
-        pass
+        paths = filedialog.askopenfilenames(
+            parent=self, filetypes=SUPPORTED, title="Seleccionar tracks"
+        )
+        if not paths:
+            return
+        existing = {item.path for item in self._items}
+        for path in paths:
+            if path in existing:
+                continue
+            item = BatchItem(path=path)
+            self._items.append(item)
+            existing.add(path)
+            self._add_row(item)
+        if self._items:
+            self._empty_label.pack_forget()
+        self._refresh_process_btn()
+
+    def _add_row(self, item: BatchItem):
+        row = ctk.CTkFrame(self._list_frame, fg_color="transparent")
+        row.pack(fill="x", pady=2)
+
+        name_lbl = ctk.CTkLabel(
+            row,
+            text=os.path.basename(item.path),
+            font=ctk.CTkFont(size=12),
+            anchor="w",
+            width=380,
+        )
+        name_lbl.pack(side="left")
+
+        status_lbl = ctk.CTkLabel(
+            row,
+            text="⏳ en cola",
+            font=ctk.CTkFont(size=12),
+            text_color="#888888",
+            width=160,
+            anchor="w",
+        )
+        status_lbl.pack(side="left")
+
+        self._rows.append({"name": name_lbl, "status": status_lbl})
+
+    def _refresh_process_btn(self):
+        can_run = (
+            bool(self._items)
+            and self._ref_path is not None
+            and (self._worker_thread is None or not self._worker_thread.is_alive())
+        )
+        self._process_btn.configure(state="normal" if can_run else "disabled")
 
     def _start_batch(self):
         pass
+
+    def _on_close(self):
+        self._cancel = True
+        self.destroy()
