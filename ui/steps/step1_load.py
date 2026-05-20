@@ -5,6 +5,7 @@ from tkinter import filedialog
 import customtkinter as ctk
 
 from audio.loader import load_audio
+from ui.batch_window import BatchWindow
 
 SUPPORTED = (
     ("Audio files", "*.wav *.mp3 *.flac *.aiff *.aif"),
@@ -43,7 +44,7 @@ class Step1Load(ctk.CTkFrame):
         ).pack(pady=(0, 20))
 
         # Main track
-        track_frame = ctk.CTkFrame(self, width=500, height=100, corner_radius=12)
+        track_frame = ctk.CTkFrame(self, width=500, height=140, corner_radius=12)
         track_frame.pack(pady=8)
         track_frame.pack_propagate(False)
 
@@ -61,6 +62,15 @@ class Step1Load(ctk.CTkFrame):
             width=220,
         )
         self._pick_btn.pack(pady=(0, 12))
+        ctk.CTkButton(
+            track_frame,
+            text="Procesar múltiples tracks (batch)",
+            command=self._open_batch,
+            width=220,
+            fg_color="#1e1e2e",
+            hover_color="#2d2d3e",
+            font=ctk.CTkFont(size=12),
+        ).pack(pady=(0, 8))
 
         # Reference track (optional)
         ref_frame = ctk.CTkFrame(
@@ -166,6 +176,9 @@ class Step1Load(ctk.CTkFrame):
     def _advance(self):
         if self.session.get("audio_data") is not None:
             self.on_next()
+
+    def _open_batch(self):
+        BatchWindow(self.winfo_toplevel())
 
     def on_enter(self):
         pass
