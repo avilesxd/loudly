@@ -5,7 +5,7 @@
 Este proyecto usa **Conventional Commits**. Cada commit que hagas debe seguir este formato:
 
 ```
-<tipo>: <descripción en imperativo, minúsculas>
+<tipo>(<scope opcional>): <descripción en imperativo, minúsculas>
 ```
 
 ### Tipos y su efecto en el versionado automático
