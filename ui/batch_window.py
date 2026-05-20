@@ -1,7 +1,7 @@
 import os
 import tempfile
 import threading
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from tkinter import filedialog
 from typing import Literal
 
@@ -169,11 +169,18 @@ class BatchWindow(ctk.CTkToplevel):
 
     def _refresh_process_btn(self):
         can_run = (
-            bool(self._items)
+            any(item.status == "pending" for item in self._items)
             and self._ref_path is not None
             and (self._worker_thread is None or not self._worker_thread.is_alive())
         )
         self._process_btn.configure(state="normal" if can_run else "disabled")
+
+    def _safe_after(self, ms: int, func) -> None:
+        try:
+            if self.winfo_exists():
+                self.after(ms, func)
+        except Exception:
+            pass
 
     def _start_batch(self):
         self._cancel = False
@@ -195,7 +202,7 @@ class BatchWindow(ctk.CTkToplevel):
             if self._cancel:
                 break
 
-            self.after(0, lambda i=idx: self._set_row_status(
+            self._safe_after(0, lambda i=idx: self._set_row_status(
                 i, "⚙️ procesando…", "#f59e0b"
             ))
 
@@ -223,7 +230,7 @@ class BatchWindow(ctk.CTkToplevel):
                 sf.write(out_path, mastered.T, sr, subtype="PCM_24")
 
                 item.status = "done"
-                self.after(0, lambda i=idx: self._set_row_status(
+                self._safe_after(0, lambda i=idx: self._set_row_status(
                     i, "✅ listo", "#4ade80"
                 ))
 
@@ -231,7 +238,7 @@ class BatchWindow(ctk.CTkToplevel):
                 msg = str(e)[:60]
                 item.status = "error"
                 item.message = msg
-                self.after(0, lambda i=idx, m=msg: self._set_row_status(
+                self._safe_after(0, lambda i=idx, m=msg: self._set_row_status(
                     i, f"❌ {m}", "#ef4444"
                 ))
 
@@ -243,21 +250,22 @@ class BatchWindow(ctk.CTkToplevel):
                         except OSError:
                             pass
 
-            self.after(0, lambda n=done_count, t=total: self._status_label.configure(
+            self._safe_after(0, lambda n=done_count, t=total: self._status_label.configure(
                 text=f"{n}/{t} procesados", text_color="#888888"
             ))
 
         if not self._cancel:
             done = sum(1 for item in self._items if item.status == "done")
             errors = sum(1 for item in self._items if item.status == "error")
-            self.after(0, lambda d=done, e=errors: self._on_batch_done(d, e))
+            self._safe_after(0, lambda d=done, e=errors: self._on_batch_done(d, e))
 
     def _set_row_status(self, idx: int, text: str, color: str):
         if idx < len(self._rows):
             self._rows[idx]["status"].configure(text=text, text_color=color)
 
     def _on_batch_done(self, done: int, errors: int):
-        self._process_btn.configure(state="normal", text="⚡ Procesar todos")
+        self._process_btn.configure(text="⚡ Procesar todos")
+        self._refresh_process_btn()
         if errors == 0:
             self._status_label.configure(
                 text=f"✅ {done} track(s) exportados exitosamente",

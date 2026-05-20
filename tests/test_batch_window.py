@@ -1,4 +1,3 @@
-import pytest
 from ui.batch_window import _remastered_path, BatchItem
 
 
