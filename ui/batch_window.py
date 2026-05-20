@@ -1,7 +1,9 @@
 import os
+import sys
 import tempfile
 import threading
 from dataclasses import dataclass
+from pathlib import Path
 from tkinter import filedialog
 from typing import Literal
 
@@ -10,6 +12,12 @@ import soundfile as sf
 
 from audio.automaster import apply_automaster
 from audio.loader import load_audio
+
+
+def _resource(relative: str) -> str:
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).parent.parent))
+    return str(base / relative)
+
 
 SUPPORTED = (
     ("Audio files", "*.wav *.mp3 *.flac *.aiff *.aif"),
@@ -44,6 +52,7 @@ class BatchWindow(ctk.CTkToplevel):
 
         self._build_ui()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+        self.after(200, lambda: self.iconbitmap(_resource("assets/loudly.ico")))
 
     def _build_ui(self):
         # Reference row
