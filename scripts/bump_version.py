@@ -47,9 +47,12 @@ def bump(new_version: str) -> None:
     with open("version_info.txt", "w", encoding="utf-8") as f:
         f.write(content)
 
+    with open("version.py", "w", encoding="utf-8") as f:
+        f.write(f'APP_VERSION = "{ver}"\n')
+
     tag = f"v{ver}"
 
-    run(["git", "add", "version_info.txt"])
+    run(["git", "add", "version_info.txt", "version.py"])
     run(["git", "commit", "-m", f"chore(release): bump version to {ver}"])
     run(["git", "tag", "-a", tag, "-m", f"Release {tag}"])
     run(["git", "push", "--follow-tags"])

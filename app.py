@@ -3,6 +3,7 @@ from pathlib import Path
 
 import customtkinter as ctk
 
+from ui.components.update_dialog import check_for_updates
 from ui.steps.step1_load import Step1Load
 from ui.steps.step2_edit import Step2Edit
 from ui.steps.step3_master import Step3Master
@@ -60,6 +61,8 @@ class LoudlyApp(ctk.CTk):
         self._build_header()
         self._build_steps()
         self._show_step(0)
+
+        self.after(1500, lambda: check_for_updates(self))
 
     def _build_header(self):
         header = ctk.CTkFrame(self, height=50, corner_radius=0)

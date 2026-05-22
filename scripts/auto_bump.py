@@ -84,6 +84,9 @@ def update_version_info(ver: str) -> None:
     with open("version_info.txt", "w", encoding="utf-8") as f:
         f.write(content)
 
+    with open("version.py", "w", encoding="utf-8") as f:
+        f.write(f'APP_VERSION = "{ver}"\n')
+
 
 def set_github_output(key: str, value: str) -> None:
     output_file = os.environ.get("GITHUB_OUTPUT")
@@ -124,7 +127,7 @@ def main() -> None:
             "github-actions[bot]@users.noreply.github.com",
         ]
     )
-    run(["git", "add", "version_info.txt"])
+    run(["git", "add", "version_info.txt", "version.py"])
     run(["git", "commit", "-m", f"chore(release): bump version to {new_version}"])
     run(["git", "tag", "-a", new_tag, "-m", f"Release {new_tag}"])
     run(["git", "push", "--follow-tags"])
