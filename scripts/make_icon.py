@@ -1,5 +1,3 @@
-"""Genera assets/loudly.ico con el logo de Loudly."""
-
 from pathlib import Path
 
 from PIL import Image, ImageDraw

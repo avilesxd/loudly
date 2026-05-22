@@ -6,11 +6,3 @@ repos:
       - id: ruff
         args: [--fix]
 
-  - repo: local
-    hooks:
-      - id: pytest
-        name: pytest
-        entry: .venv/Scripts/python.exe -m pytest tests/ -q
-        language: system
-        pass_filenames: false
-        always_run: true

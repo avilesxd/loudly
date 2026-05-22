@@ -6,11 +6,11 @@ block_cipher = None
 datas = []
 datas += collect_data_files("matchering")
 datas += collect_data_files("customtkinter")
-datas += [("assets/loudly.ico", "assets")]
+datas += [("src/assets/loudly.ico", "assets")]
 
 a = Analysis(
     ["main.py"],
-    pathex=[],
+    pathex=["src"],
     binaries=collect_dynamic_libs("sounddevice"),
     datas=datas,
     hiddenimports=[
@@ -47,7 +47,7 @@ exe = EXE(
     name="Loudly",
     debug=False,
     console=False,
-    icon="assets/loudly.ico",
+    icon="src/assets/loudly.ico",
     onefile=True,
     version="version_info.txt",
 )
