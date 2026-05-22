@@ -1,5 +1,5 @@
 customtkinter>=5.2.2
-pedalboard>=0.9.9
+pedalboard>=0.9.23
 matchering>=2.0.6
 pyloudnorm>=0.1.1
 sounddevice>=0.4.6
