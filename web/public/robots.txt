@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://avilesxd.github.io/loudly/sitemap-index.xml
