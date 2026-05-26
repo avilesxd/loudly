@@ -3,7 +3,9 @@ name: Deploy web to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ['web/**']
+    paths:
+      - 'web/**'
+      - 'src/version.py'
   workflow_dispatch:
 
 permissions:
