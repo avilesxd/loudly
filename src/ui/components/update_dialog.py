@@ -1,9 +1,16 @@
+import sys
 import threading
+from pathlib import Path
 
 import customtkinter as ctk
 
 from services import updater
 from version import APP_VERSION
+
+
+def _resource(relative: str) -> str:
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).parent.parent.parent))
+    return str(base / relative)
 
 
 def check_for_updates(root: ctk.CTk) -> None:
@@ -36,6 +43,8 @@ class _UpdateDialog(ctk.CTkToplevel):
         sw = self.winfo_screenwidth()
         sh = self.winfo_screenheight()
         self.geometry(f"{w}x{h}+{(sw - w) // 2}+{(sh - h) // 2}")
+
+        self.after(250, lambda: self.iconbitmap(_resource("assets/loudly.ico")))
 
         ctk.CTkLabel(
             self,
@@ -78,6 +87,16 @@ class _UpdateDialog(ctk.CTkToplevel):
             hover_color="gray20",
             command=self.destroy,
         ).pack(side="left", padx=10)
+
+    def _windows_set_titlebar_color(self, color_mode: str) -> None:
+        # focus_get() → nametowidget() crashes with TypeError on certain Python
+        # versions when the root widget is focused. Catch it so the dialog stays
+        # visible (withdraw() on line 245 of ctk_toplevel is never reached before
+        # the crash, so the window is still shown).
+        try:
+            super()._windows_set_titlebar_color(color_mode)
+        except TypeError:
+            pass
 
     def _start_download(self) -> None:
         self._update_btn.configure(state="disabled")
