@@ -1,0 +1,571 @@
+---
+import Layout from '../layouts/Layout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const versionPy = fs.readFileSync(path.join(process.cwd(), '..', 'src', 'version.py'), 'utf-8');
+const VERSION   = versionPy.match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1] ?? '0.0.0';
+
+const REPO    = "https://github.com/avilesxd/loudly";
+const RELEASE = `${REPO}/releases/latest`;
+
+const features = [
+  {
+    icon: "🎚️",
+    title: "EQ de precisión",
+    body: "Ecualizador paramétrico de 10 bandas con filtros shelf, peak y highpass para moldear el sonido con exactitud.",
+  },
+  {
+    icon: "🔒",
+    title: "Limiter transparente",
+    body: "Ceiling configurable con lookahead; evita la distorsión digital sin colorear el audio.",
+  },
+  {
+    icon: "🎯",
+    title: "Target LUFS",
+    body: "Normaliza al estándar de streaming que elijas — -14 LUFS para Spotify, -16 para podcasts o el valor que necesites.",
+  },
+  {
+    icon: "🔄",
+    title: "Auto-master por referencia",
+    body: "Analiza una canción de referencia y ajusta espectro, dinámica y loudness para que tu track suene al mismo nivel.",
+  },
+  {
+    icon: "📦",
+    title: "Procesado en lote",
+    body: "Aplica los mismos ajustes a carpetas enteras de archivos. Exporta WAV o MP3 con un solo clic.",
+  },
+  {
+    icon: "👂",
+    title: "Preview en tiempo real",
+    body: "Escucha los cambios antes de renderizar. Reproduce el antes y el después sin salir de la app.",
+  },
+];
+
+const steps = [
+  { n: "01", title: "Carga tu track", body: "Arrastra o selecciona el archivo de audio. WAV y MP3 soportados." },
+  { n: "02", title: "EQ + Limiter",   body: "Ajusta las bandas del ecualizador y establece el ceiling del limiter." },
+  { n: "03", title: "Master",         body: "Elige un target LUFS o una canción de referencia y exporta." },
+];
+---
+
+<Layout title="Loudly — Masterización de audio">
+
+  <!-- NAV -->
+  <header>
+    <nav>
+      <a href="#" class="logo">
+        <span class="logo-mark">L</span>
+        Loudly
+      </a>
+      <div class="nav-links">
+        <a href="#features">Características</a>
+        <a href="#how">Cómo funciona</a>
+        <a href={REPO} target="_blank" rel="noopener" class="nav-gh">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.341-3.369-1.341-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="container hero-inner">
+        <div class="badge">versión - v{VERSION}</div>
+        <h1>
+          Masterización de audio<br />
+          <span class="accent">sin complicaciones</span>
+        </h1>
+        <p class="hero-sub">
+          Loudly es una aplicación de escritorio gratuita que te da EQ, limiter,
+          normalización LUFS y auto-master por referencia en tres pasos.
+        </p>
+        <div class="hero-cta">
+          <a href={RELEASE} target="_blank" rel="noopener" class="btn btn-primary">
+            Descargar gratis
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </a>
+          <a href={REPO} target="_blank" rel="noopener" class="btn btn-ghost">
+            Ver código fuente
+          </a>
+        </div>
+        <p class="hero-note">Portable · Sin instalador</p>
+      </div>
+
+      <!-- Waveform decoration -->
+      <div class="waveform" aria-hidden="true">
+        {Array.from({ length: 48 }, (_, i) => {
+          const h = 20 + Math.sin(i * 0.45) * 30 + Math.sin(i * 0.9) * 20 + Math.random() * 15;
+          return <div class="bar" style={`height:${h}px`}></div>;
+        })}
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section" id="features">
+      <div class="container">
+        <h2 class="section-title">Todo lo que necesitás</h2>
+        <p class="section-sub">Herramientas profesionales en una interfaz simple.</p>
+        <div class="features-grid">
+          {features.map(f => (
+            <article class="feature-card">
+              <span class="feature-icon" aria-hidden="true">{f.icon}</span>
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section section-alt" id="how">
+      <div class="container">
+        <h2 class="section-title">Cómo funciona</h2>
+        <p class="section-sub">Un wizard de tres pasos que te lleva del archivo crudo al master.</p>
+        <div class="steps">
+          {steps.map((s, i) => (
+            <div class="step">
+              <div class="step-num">{s.n}</div>
+              {i < steps.length - 1 && <div class="step-line" aria-hidden="true"></div>}
+              <div class="step-body">
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD CTA -->
+    <section class="section cta-section">
+      <div class="container cta-inner">
+        <h2>Empezá a masterizar hoy</h2>
+        <p>Gratuito, de código abierto, sin límites.</p>
+        <a href={RELEASE} target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+          Descargar Loudly {VERSION}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-inner">
+      <span class="footer-logo">Loudly</span>
+      <span class="footer-meta">
+        MIT License ·
+        <a href={REPO} target="_blank" rel="noopener">GitHub</a> ·
+        Hecho con Python
+      </span>
+    </div>
+  </footer>
+
+</Layout>
+
+<style>
+  /* ── Layout helpers ── */
+  .container {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* ── Nav ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(7, 9, 14, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  nav {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-gh {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text) !important;
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    transition: border-color 0.2s;
+  }
+
+  .nav-gh:hover { border-color: var(--accent); }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 6rem 0 3rem;
+    text-align: center;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.35;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(0, 200, 160, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--accent-glow);
+    border: 1px solid rgba(0, 200, 160, 0.3);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    max-width: 720px;
+  }
+
+  .accent { color: var(--accent); }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 520px;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .hero-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.65rem 1.4rem;
+    border-radius: var(--radius);
+    transition: all 0.18s;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-primary:hover {
+    background: #00ddb2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0, 200, 160, 0.35);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
+
+  .btn-lg {
+    font-size: 1.05rem;
+    padding: 0.85rem 2rem;
+  }
+
+  /* ── Waveform decoration ── */
+  .waveform {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 3.5rem;
+    height: 80px;
+    opacity: 0.25;
+    padding: 0 2rem;
+  }
+
+  .bar {
+    width: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── Sections ── */
+  .section {
+    padding: 5rem 0;
+  }
+
+  .section-alt {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-sub {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  /* ── Features grid ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(0, 200, 160, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .feature-icon {
+    font-size: 1.6rem;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .feature-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .feature-card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Steps ── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    column-gap: 1.25rem;
+    position: relative;
+  }
+
+  .step-num {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: grid;
+    place-items: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+
+  .step-line {
+    position: absolute;
+    left: 25px;
+    top: 52px;
+    width: 2px;
+    height: calc(100% + 0px);
+    background: var(--border);
+  }
+
+  .step-body {
+    padding: 0.85rem 0 2.5rem;
+  }
+
+  .step-body h3 {
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+
+  .step-body p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  /* ── CTA section ── */
+  .cta-section {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(0, 200, 160, 0.05) 100%);
+    border-top: 1px solid var(--border);
+  }
+
+  .cta-inner {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .cta-inner h2 {
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .cta-inner p {
+    color: var(--text-muted);
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 0;
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .footer-logo {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .footer-meta a:hover { color: var(--text); }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .nav-links a:not(.nav-gh) { display: none; }
+    .hero { padding: 4rem 0 2rem; }
+    .waveform { display: none; }
+    .features-grid { grid-template-columns: 1fr; }
+  }
+</style>
