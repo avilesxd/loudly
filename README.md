@@ -2,6 +2,8 @@
 
 <div align="center">
 
+![Loudly](https://raw.githubusercontent.com/avilesxd/loudly/refs/heads/main/web/public/og.png)
+
 [![CI](https://github.com/avilesxd/loudly/actions/workflows/ci.yml/badge.svg)](https://github.com/avilesxd/loudly/actions/workflows/ci.yml)
 [![Release](https://github.com/avilesxd/loudly/actions/workflows/release.yml/badge.svg)](https://github.com/avilesxd/loudly/actions/workflows/release.yml)
 [![Latest Release](https://img.shields.io/github/v/release/avilesxd/loudly.svg)](https://github.com/avilesxd/loudly/releases/latest)
