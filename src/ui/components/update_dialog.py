@@ -1,3 +1,4 @@
+import logging
 import sys
 import threading
 from pathlib import Path
@@ -6,6 +7,8 @@ import customtkinter as ctk
 
 from services import updater
 from version import APP_VERSION
+
+_log = logging.getLogger(__name__)
 
 
 def _resource(relative: str) -> str:
@@ -18,13 +21,24 @@ def check_for_updates(root: ctk.CTk) -> None:
 
 
 def _worker(root: ctk.CTk) -> None:
-    result = updater.fetch_latest()
-    if result is None:
+    try:
+        result = updater.fetch_latest()
+        if result is None:
+            return
+        tag, url = result
+        if not updater.is_newer(tag):
+            return
+    except Exception:
+        _log.exception("comprobación de actualizaciones falló")
         return
-    tag, url = result
-    if not updater.is_newer(tag):
-        return
-    root.after(0, lambda: _UpdateDialog(root, tag, url))
+    root.after(0, lambda: _show_dialog(root, tag, url))
+
+
+def _show_dialog(root: ctk.CTk, tag: str, url: str) -> None:
+    try:
+        _UpdateDialog(root, tag, url)
+    except Exception:
+        _log.exception("no se pudo mostrar el diálogo de actualización")
 
 
 class _UpdateDialog(ctk.CTkToplevel):
@@ -115,6 +129,11 @@ class _UpdateDialog(ctk.CTkToplevel):
         self.after(0, lambda p=pct: self._status.configure(text=f"Descargando... {p}%"))
 
     def _finish(self, tmp_exe: str) -> None:
-        should_exit = updater.apply_update(tmp_exe)
+        try:
+            should_exit = updater.apply_update(tmp_exe)
+        except Exception as exc:
+            _log.exception("apply_update falló")
+            self._status.configure(text=f"Error: {exc}")
+            return
         if should_exit:
             self._root.destroy()

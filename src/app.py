@@ -1,8 +1,10 @@
+import logging
 import sys
 from pathlib import Path
 
 import customtkinter as ctk
 
+from services.updater import consume_update_log
 from ui.components.update_dialog import check_for_updates
 from ui.steps.step1_load import Step1Load
 from ui.steps.step2_edit import Step2Edit
@@ -39,6 +41,7 @@ class LoudlyApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
+        consume_update_log()
         self.title("Loudly — Masterizador")
         self.geometry("900x620")
         self.resizable(False, False)
@@ -63,6 +66,11 @@ class LoudlyApp(ctk.CTk):
         self._show_step(0)
 
         self.after(1500, lambda: check_for_updates(self))
+
+    def report_callback_exception(self, exc, val, tb):
+        logging.getLogger("tk_callback").error(
+            "Excepción en callback de Tkinter", exc_info=(exc, val, tb)
+        )
 
     def _build_header(self):
         header = ctk.CTkFrame(self, height=50, corner_radius=0)
