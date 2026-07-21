@@ -126,7 +126,8 @@ def apply_update(tmp_exe: str) -> bool:
             f'copy /y "{tmp_exe}" "{current_exe}" >> "{log_file}" 2>&1\n'
             "if errorlevel 1 (\n"
             "  if %attempts% lss 15 goto retry\n"
-            f'  >> "{log_file}" echo copy fallo tras %attempts% intentos, se conserva la version anterior\n'
+            f'  >> "{log_file}" echo copy fallo tras %attempts% intentos, '
+            "se conserva la version anterior\n"
             ") else (\n"
             f'  >> "{log_file}" echo copy ok tras %attempts% intentos\n'
             f'  del "{tmp_exe}"\n'
