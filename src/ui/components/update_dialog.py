@@ -44,7 +44,7 @@ def _show_dialog(root: ctk.CTk, tag: str, url: str) -> None:
 class _UpdateDialog(ctk.CTkToplevel):
     def __init__(self, root: ctk.CTk, new_version: str, url: str):
         super().__init__(root)
-        self._root = root
+        self._app = root
         self._url = url
 
         self.title("Actualización disponible")
@@ -136,4 +136,4 @@ class _UpdateDialog(ctk.CTkToplevel):
             self._status.configure(text=f"Error: {exc}")
             return
         if should_exit:
-            self._root.destroy()
+            self._app.destroy()
