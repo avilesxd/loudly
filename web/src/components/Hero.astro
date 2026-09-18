@@ -1,0 +1,153 @@
+---
+interface Props {
+  repo: string;
+  release: string;
+  version: string;
+}
+
+const { repo, release, version } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="container hero-inner">
+    <div class="badge">versión - v{version}</div>
+    <h1>
+      Masterización de audio<br />
+      <span class="accent">sin complicaciones</span>
+    </h1>
+    <p class="hero-sub">
+      Loudly es una aplicación de escritorio gratuita que te da EQ, limiter,
+      normalización LUFS y auto-master por referencia en tres pasos.
+    </p>
+    <div class="hero-cta">
+      <a href={release} target="_blank" rel="noopener" class="btn btn-primary">
+        Descargar gratis
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </a>
+      <a href={repo} target="_blank" rel="noopener" class="btn btn-ghost">
+        Ver código fuente
+      </a>
+    </div>
+    <p class="hero-note">Portable · Sin instalador</p>
+  </div>
+
+  <!-- Waveform decoration -->
+  <div class="waveform" aria-hidden="true">
+    {Array.from({ length: 48 }, (_, i) => {
+      const h = 20 + Math.sin(i * 0.45) * 30 + Math.sin(i * 0.9) * 20 + Math.random() * 15;
+      return <div class="bar" style={`height:${h}px`}></div>;
+    })}
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 6rem 0 3rem;
+    text-align: center;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.35;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(0, 200, 160, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--accent-glow);
+    border: 1px solid rgba(0, 200, 160, 0.3);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    max-width: 720px;
+  }
+
+  .accent { color: var(--accent); }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 520px;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .hero-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Waveform decoration ── */
+  .waveform {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 3.5rem;
+    height: 80px;
+    opacity: 0.25;
+    padding: 0 2rem;
+  }
+
+  .bar {
+    width: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 4rem 0 2rem; }
+    .waveform { display: none; }
+  }
+</style>

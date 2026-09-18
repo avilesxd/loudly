@@ -1,0 +1,48 @@
+---
+interface Props {
+  release: string;
+  version: string;
+}
+
+const { release, version } = Astro.props;
+---
+
+<section class="section cta-section">
+  <div class="container cta-inner">
+    <h2>Empieza a masterizar hoy</h2>
+    <p>Gratuito, de código abierto, sin límites.</p>
+    <a href={release} target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+      Descargar Loudly {version}
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<style>
+  .cta-section {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(0, 200, 160, 0.05) 100%);
+    border-top: 1px solid var(--border);
+  }
+
+  .cta-inner {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .cta-inner h2 {
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .cta-inner p {
+    color: var(--text-muted);
+  }
+</style>

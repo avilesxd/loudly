@@ -104,4 +104,82 @@ const ogImage = `https://avilesxd.github.io/loudly/og.png`;
     background: var(--accent);
     color: var(--bg);
   }
+
+  /* ── Layout helpers (compartido entre secciones) ── */
+  .container {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .section {
+    padding: 5rem 0;
+  }
+
+  .section-alt {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-sub {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  /* ── Buttons (compartido entre Nav, Hero y CTA) ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.65rem 1.4rem;
+    border-radius: var(--radius);
+    transition: all 0.18s;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-primary:hover {
+    background: #00ddb2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0, 200, 160, 0.35);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
+
+  .btn-sm {
+    font-size: 0.875rem;
+    padding: 0.4rem 1rem;
+  }
+
+  .btn-lg {
+    font-size: 1.05rem;
+    padding: 0.85rem 2rem;
+  }
 </style>

@@ -1,0 +1,82 @@
+---
+const steps = [
+  { n: "01", title: "Carga tu track", body: "Arrastra o selecciona el archivo de audio. WAV y MP3 soportados." },
+  { n: "02", title: "EQ + Limiter",   body: "Ajusta las bandas del ecualizador y establece el ceiling del limiter." },
+  { n: "03", title: "Master",         body: "Elige un target LUFS o una canción de referencia y exporta." },
+];
+---
+
+<section class="section section-alt" id="how">
+  <div class="container">
+    <h2 class="section-title">Cómo funciona</h2>
+    <p class="section-sub">Un wizard de tres pasos que te lleva del archivo crudo al master.</p>
+    <div class="steps">
+      {steps.map((s, i) => (
+        <div class="step">
+          <div class="step-num">{s.n}</div>
+          {i < steps.length - 1 && <div class="step-line" aria-hidden="true"></div>}
+          <div class="step-body">
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    column-gap: 1.25rem;
+    position: relative;
+  }
+
+  .step-num {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: grid;
+    place-items: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+
+  .step-line {
+    position: absolute;
+    left: 25px;
+    top: 52px;
+    width: 2px;
+    height: calc(100% + 0px);
+    background: var(--border);
+  }
+
+  .step-body {
+    padding: 0.85rem 0 2.5rem;
+  }
+
+  .step-body h3 {
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+
+  .step-body p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+</style>
