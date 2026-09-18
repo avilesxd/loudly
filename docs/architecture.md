@@ -26,7 +26,7 @@ Al entrar a cada paso se llama `on_enter()` para que el paso lea el estado actua
 ## Módulos de audio
 
 | Módulo | Función principal | Notas |
-|--------|-------------------|-------|
+| -------- | ------------------- | ------- |
 | `loader.py` | `load_audio(path)` | MP3 via miniaudio (soundfile no soporta MP3 con Python 3.13). El resto via soundfile. |
 | `eq.py` | `apply_eq(audio, sr, ...)` | Shelf a 80 Hz y 8 kHz; peaks a 250 Hz y 2.5 kHz. Retorna el mismo array sin modificar si todos los gains son 0. |
 | `limiter.py` | `apply_limiter(audio, sr, target)` | Normaliza al LUFS objetivo con pyloudnorm; luego `np.clip` a −0.3 dBFS. Usa clip (no Pedalboard Limiter) porque clip solo atenúa, nunca añade ganancia. |
@@ -41,8 +41,8 @@ Todos los arrays internos son `np.ndarray` de forma `(channels, samples)` en `fl
 Las bibliotecas externas usan convenciones distintas; las transposiciones ocurren en los puntos de integración:
 
 | Biblioteca | Convención | Punto de transposición |
-|------------|-----------|------------------------|
-| soundfile  | `(samples, channels)` | `loader.py`, `step3_master.py._export()` |
+| ------------ | ----------- | ------------------------ |
+| soundfile | `(samples, channels)` | `loader.py`, `step3_master.py._export()` |
 | pyloudnorm | `(samples, channels)` float64 | `limiter.py` |
 | sounddevice callback | `(frames, channels)` | `player.py` callback |
 

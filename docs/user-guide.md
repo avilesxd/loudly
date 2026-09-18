@@ -17,7 +17,7 @@
 Cada slider va de **−12 dB** a **+12 dB**. El audio se reprocesa automáticamente 300 ms después de soltar el control.
 
 | Control | Frecuencia | Tipo de filtro | Casos de uso comunes |
-|---------|-----------|----------------|----------------------|
+| --------- | ----------- | ---------------- | ---------------------- |
 | Low | 80 Hz | Shelf | Controla el peso del bajo. Baja si hay boominess o exceso de ruido de sala. |
 | Low-Mid | 250 Hz | Peak | Zona de calor o barro. Baja para limpiar mezclas densas o con mucho cuerpo. |
 | Hi-Mid | 2.5 kHz | Peak | Presencia y ataque. Sube para que el vocal o guitarra se destaquen en la mezcla. |
@@ -28,7 +28,7 @@ Cada slider va de **−12 dB** a **+12 dB**. El audio se reprocesa automáticame
 Ajusta el slider de **Target LUFS** o usa uno de los presets rápidos:
 
 | Preset | Valor | Plataforma objetivo |
-|--------|-------|---------------------|
+| -------- | ------- | --------------------- |
 | Spotify | −14 LUFS | Streaming estándar |
 | YouTube | −13 LUFS | YouTube Music, videos |
 | CD | −9 LUFS | Máster físico / descarga |
@@ -60,7 +60,7 @@ Al presionarlo, Loudly analiza la referencia y ajusta automáticamente el espect
 Compara las métricas **ANTES** (audio con EQ/limiter del paso 2) y **DESPUÉS** (tras Auto-Master):
 
 | Métrica | Qué mide |
-|---------|----------|
+| --------- | ---------- |
 | LUFS | Loudness integrado (percibido). |
 | True Peak | Pico máximo en dBTP. Aparece en rojo si supera −0.1 dBTP, lo que puede causar clipping en la conversión a formatos lossy. |
 | Dinámica | Desviación estándar del audio; indicador aproximado de rango dinámico. |
@@ -94,7 +94,7 @@ En el **Paso 1**, hacé clic en **Procesar múltiples tracks (batch)**.
 4. Hacé clic en **⚡ Procesar todos** — cada track se procesa de forma secuencial. El estado de cada fila se actualiza en tiempo real:
 
    | Estado | Significado |
-   |--------|-------------|
+   | -------- | ------------- |
    | ⏳ en cola | Esperando procesamiento |
    | ⚙️ procesando… | matchering en curso |
    | ✅ listo | Exportado con éxito |
