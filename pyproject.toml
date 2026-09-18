@@ -11,6 +11,9 @@ select = ["E", "F", "I", "UP", "B", "W"]
 [tool.ruff.lint.isort]
 known-first-party = ["audio", "ui", "services", "app", "version"]
 
+[tool.ruff.format]
+exclude = ["*.md"]
+
 [tool.pyright]
 pythonVersion = "3.13"
 typeCheckingMode = "standard"
